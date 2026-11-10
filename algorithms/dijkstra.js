@@ -1,6 +1,6 @@
 import {MinHeap, reconstructPath, terrainCosts, directions} from "./helpers.js";
 
-export function dijkstra(grid, start, end){
+export const dijkstra = (grid, start, end) => {
     const steps = [];
     const frontier = new MinHeap();
     const distances = new Map();

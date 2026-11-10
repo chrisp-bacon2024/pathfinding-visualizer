@@ -1,6 +1,6 @@
 import {MinHeap, reconstructPath, terrainCosts, directions} from "./helpers.js";
 
-export function aStar(grid, start, end){
+export const aStar = (grid, start, end) => {
     const steps = [];
     const frontier = new MinHeap();
     const distances = new Map();

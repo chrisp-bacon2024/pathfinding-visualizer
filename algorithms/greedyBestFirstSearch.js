@@ -1,6 +1,6 @@
 import {MinHeap, reconstructPath, terrainCosts, directions, destinationDistance} from "./helpers.js";
 
-export function greedyBestFirstSearch(grid, start, end){
+export const greedyBestFirstSearch = (grid, start, end) => {
     const steps = [];
     const frontier = new MinHeap();
     const discovered = new Set();

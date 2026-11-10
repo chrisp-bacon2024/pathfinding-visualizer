@@ -3,13 +3,15 @@ import { bfs } from "./bfs.js";
 import { dijkstra } from "./dijkstra.js";
 import { aStar } from "./aStar.js"
 import { greedyBestFirstSearch } from "./greedyBestFirstSearch.js";
+import { biBFS } from "./biBFS.js";
 
 const algorithms = {
     dfs,
     bfs,
     dijkstra,
     astar: aStar,
-    greedy: greedyBestFirstSearch
+    greedy: greedyBestFirstSearch,
+    bidirectionalbfs: biBFS
 };
 
 export function createAlgorithmRunner(getGrid, animator, ctx){
