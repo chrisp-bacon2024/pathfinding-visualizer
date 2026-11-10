@@ -1,0 +1,154 @@
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 20px;
+    gap: 15px;
+}
+
+.pageHeader,
+.toolbar {
+    flex-shrink: 0;
+}
+
+/* Grid */
+
+.gridContainer {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#gridCanvas {
+    display: block;
+}
+
+/* Toolbar */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 8px 12px;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.toolbar-group + .toolbar-group {
+    border-left: 1px solid #cbd5e1;
+    padding-left: 12px;
+}
+
+.toolbar-label {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 4px;
+}
+
+/* Shared button styles */
+
+.toolbar button {
+    flex: 0 0 auto;
+    width: auto;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    color: #334155;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.toolbar button:hover:not(:disabled) {
+    background: #f1f5f9;
+}
+
+.toolbar button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Algorithm buttons */
+
+.algorithm-btn.selected {
+    background: #dbeafe;
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+
+/* Run button */
+
+#runAlgorithm {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+#runAlgorithm:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+/* Terrain buttons */
+
+.terrain-btn.selected {
+    background: #284a63;
+    border-color: #65b5e8;
+    color: white;
+}
+
+.terrain-btn.selected:hover {
+    background: #345d7b;
+}
+
+/* Keyboard shortcut labels */
+
+.shortcut {
+    font-size: 11px;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    padding: 2px 5px;
+}
+
+.terrain-btn.selected .shortcut {
+    color: #e2e8f0;
+    border-color: #65b5e8;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+    .app {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .toolbar-group + .toolbar-group {
+        border-left: none;
+        padding-left: 0;
+    }
+}

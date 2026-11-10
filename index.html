@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Pathfinding Visualizer</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="app">
+            <header class="pageHeader">
+                <h1>Pathfinding Visualizer</h1>
+            </header>
+
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <span class="toolbar-label">Algorithms</span>
+
+                    <button class="algorithm-btn" data-algorithm="dfs">DFS</button>
+                    <button class="algorithm-btn" data-algorithm="bfs">BFS</button>
+                    <button class="algorithm-btn" data-algorithm="dijkstra">Dijkstra</button>
+                    <button class="algorithm-btn" data-algorithm="astar">A*</button>
+                </div>
+
+                <div class="toolbar-group">
+                    <span class="toolbar-label">Paint:</span>
+
+                    <button class="terrain-btn selected" data-brush="wall" aria-pressed="true">Wall</button>
+                    <button class="terrain-btn" data-brush="grass" aria-pressed="false">Grass</button>
+                    <button class="terrain-btn" data-brush="mud" aria-pressed="false">Mud</button>
+                    <button class="terrain-btn" data-brush="road" aria-pressed="false">Road</button>
+                </div>
+
+                <div class="toolbar-group">
+                    <span class="toolbar-label">Generate:</span>
+
+                    <button id="generate-map-btn" class="generate-btn">
+                        Generate Map
+                    </button>
+                </div>
+            </div>
+
+            <main class="gridContainer">
+                <canvas id="gridCanvas"></canvas>
+            </main>
+        </div>
+
+        <script type="module" src="./main.js"></script>
+    </body>
+</html>
