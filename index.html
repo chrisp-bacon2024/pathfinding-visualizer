@@ -36,6 +36,37 @@
                                 title="Bellman-Ford">Bellman-Ford</button>
                         <button class="algorithm-btn" data-algorithm="thetastar"
                                 title="Theta*">Theta*</button>
+
+                        <!-- Not an algorithm: movement mode switch, sized to fit
+                             one grid cell. main.js handles the clicks. -->
+                        <div class="movement-toggle" role="group" aria-labelledby="movement-toggle-label">
+                            <span id="movement-toggle-label" class="movement-toggle-label">Directions</span>
+
+                            <!-- Shows the current mode; click to switch.
+                                 main.js swaps the icon, text and labels. -->
+                            <button id="movement-toggle-btn" class="movement-toggle-btn"
+                                    aria-label="Directions: 4-way. Click to switch to 8-way."
+                                    title="4-way: up, down, left and right only. Click to switch to 8-way.">
+                                <!-- Compass with 4 arrows -->
+                                <svg class="movement-icon" data-mode="4" viewBox="0 0 16 16" aria-hidden="true">
+                                    <circle cx="8" cy="8" r="7.2" fill="none" stroke="currentColor" stroke-width="1"/>
+                                    <path d="M8 4.4V11.6M4.4 8H11.6" stroke="currentColor" stroke-width="1.3"/>
+                                    <path d="M8 1.8 6.2 4.4H9.8ZM8 14.2 6.2 11.6H9.8ZM14.2 8 11.6 6.2V9.8ZM1.8 8 4.4 6.2V9.8Z" fill="currentColor"/>
+                                </svg>
+                                <!-- Compass rose with 8 needles -->
+                                <svg class="movement-icon" data-mode="8" viewBox="0 0 16 16" aria-hidden="true" hidden>
+                                    <circle cx="8" cy="8" r="7.2" fill="none" stroke="currentColor" stroke-width="1"/>
+                                    <!-- Same 4 arrows as the 4-way icon... -->
+                                    <path d="M8 4.4V11.6M4.4 8H11.6" stroke="currentColor" stroke-width="1.3"/>
+                                    <path d="M8 1.8 6.2 4.4H9.8ZM8 14.2 6.2 11.6H9.8ZM14.2 8 11.6 6.2V9.8ZM1.8 8 4.4 6.2V9.8Z" fill="currentColor"/>
+                                    <!-- ...plus 4 smaller diagonal arrows. Their shafts start
+                                         away from the centre so the middle stays readable at 22px. -->
+                                    <path d="M9.3 6.7 10.4 5.6M9.3 9.3 10.4 10.4M6.7 9.3 5.6 10.4M6.7 6.7 5.6 5.6" stroke="currentColor" stroke-width="1.1"/>
+                                    <path d="M11.9 4.1 11.2 6.5 9.5 4.8ZM11.9 11.9 11.2 9.5 9.5 11.2ZM4.1 11.9 4.8 9.5 6.5 11.2ZM4.1 4.1 4.8 6.5 6.5 4.8Z" fill="currentColor"/>
+                                </svg>
+                                <span class="movement-text">4-way</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

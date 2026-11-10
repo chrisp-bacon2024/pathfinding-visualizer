@@ -1,4 +1,4 @@
-import { reconstructPath, directions } from "./helpers.js";
+import { getNeighbors, MOVEMENT_MODES } from "./helpers.js";
 
 const reconstructBidirectionalPath = (
     startCameFrom,
@@ -39,7 +39,12 @@ const reconstructBidirectionalPath = (
 
 }
 
-export const biBFS = (grid, start, end) => {
+// Like BFS, unweighted: it minimises the number of moves. In 8-way mode a
+// diagonal counts as one move, so the result is not necessarily the
+// shortest in geometric distance or terrain cost. Searching backwards from
+// the end is valid in both modes because every move is reversible
+// (including the no-corner-cutting rule, which is symmetric).
+export const biBFS = (grid, start, end, mode = MOVEMENT_MODES.FOUR) => {
     const steps = [];
     const startFrontier = [start];
     const startDiscovered = new Set([start]);
@@ -59,29 +64,18 @@ export const biBFS = (grid, start, end) => {
             steps.push({cell: startVisiting, state: "visited"});
             }
 
-            for (const [dr, dc] of directions){
-                const newStartRow = startVisiting.row + dr;
-                const newStartCol = startVisiting.col + dc;
-
-                if (
-                    newStartRow >= 0 &&
-                    newStartRow < grid.nRows &&
-                    newStartCol >= 0 &&
-                    newStartCol < grid.nCols
-                ) {
-                    const startToVisit = grid.rows[newStartRow][newStartCol];
-                    if (!startDiscovered.has(startToVisit) && startToVisit.type !== "wall"){
-                        startCameFrom.set(startToVisit, startVisiting);
-                        startDiscovered.add(startToVisit)
-                        if (startToVisit !== start && startToVisit !== end){
-                            steps.push({cell: startToVisit, state: "frontier"})
-                        }
-                        if (endDiscovered.has(startToVisit)){
-                            meetingNode = startToVisit;
-                            break
-                        }
-                        startFrontier.push(startToVisit);
-                    };
+            for (const { cell: startToVisit } of getNeighbors(grid, startVisiting, mode)){
+                if (!startDiscovered.has(startToVisit)){
+                    startCameFrom.set(startToVisit, startVisiting);
+                    startDiscovered.add(startToVisit)
+                    if (startToVisit !== start && startToVisit !== end){
+                        steps.push({cell: startToVisit, state: "frontier"})
+                    }
+                    if (endDiscovered.has(startToVisit)){
+                        meetingNode = startToVisit;
+                        break
+                    }
+                    startFrontier.push(startToVisit);
                 };
             };
             if (meetingNode) break;
@@ -95,29 +89,18 @@ export const biBFS = (grid, start, end) => {
                 steps.push({cell: endVisiting, state: "visited"});
             };
 
-            for (const [dr, dc] of directions) {
-                const newEndRow = endVisiting.row + dr;
-                const newEndCol = endVisiting.col + dc;
-
-                if (
-                    newEndRow >= 0 &&
-                    newEndRow < grid.nRows &&
-                    newEndCol >= 0 &&
-                    newEndCol < grid.nCols
-                ) {
-                    const endToVisit = grid.rows[newEndRow][newEndCol];
-                    if (!endDiscovered.has(endToVisit) && endToVisit.type !== "wall"){
-                        endCameFrom.set(endToVisit, endVisiting);
-                        endDiscovered.add(endToVisit);
-                        if (endToVisit !== start && endToVisit !== end){
-                            steps.push({cell: endToVisit, state: "frontier"})
-                        }
-                        if (startDiscovered.has(endToVisit)){
-                            meetingNode = endToVisit;
-                            break;
-                        }
-                        endFrontier.push(endToVisit);
-                    };
+            for (const { cell: endToVisit } of getNeighbors(grid, endVisiting, mode)) {
+                if (!endDiscovered.has(endToVisit)){
+                    endCameFrom.set(endToVisit, endVisiting);
+                    endDiscovered.add(endToVisit);
+                    if (endToVisit !== start && endToVisit !== end){
+                        steps.push({cell: endToVisit, state: "frontier"})
+                    }
+                    if (startDiscovered.has(endToVisit)){
+                        meetingNode = endToVisit;
+                        break;
+                    }
+                    endFrontier.push(endToVisit);
                 };
             }
             if (meetingNode) break;

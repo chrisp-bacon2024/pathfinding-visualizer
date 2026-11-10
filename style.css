@@ -137,6 +137,69 @@ body {
     background: #345d7b;
 }
 
+/* Movement toggle (the last slot of the algorithm grid).
+   Kept compact so it never makes its grid row taller than a button;
+   the grid cell stretches it to the row's height and column's width. */
+
+.movement-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    min-width: 0;
+    padding: 1px 2px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #f1f5f9;
+}
+
+.movement-toggle-label {
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    color: #64748b;
+}
+
+.toolbar .movement-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 4px;
+    border: none;
+    border-radius: 4px;
+    background: #284a63;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 22px;
+    white-space: nowrap;
+}
+
+/* :not(:disabled) matches the specificity of the generic
+   ".toolbar button:hover:not(:disabled)" rule so this one wins. */
+.toolbar .movement-toggle-btn:hover:not(:disabled) {
+    background: #345d7b;
+}
+
+/* 22px so the arrows stay distinct at 100% zoom. The panel's padding,
+   the caption's line height and the button's vertical padding were
+   trimmed to make room: 2 border + 2 padding + 10 caption + 22 button
+   = 36px, the same as one algorithm button. */
+.movement-icon {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+}
+
+/* The hidden attribute alone loses to display rules on SVGs in some browsers. */
+.movement-icon[hidden] {
+    display: none;
+}
+
 /* Keyboard shortcut labels */
 
 .shortcut {

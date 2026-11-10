@@ -1,6 +1,6 @@
-import { reconstructPath, directions } from "./helpers.js";
+import { reconstructPath, getNeighbors, MOVEMENT_MODES } from "./helpers.js";
 
-export const dfs = (grid, start, end) => {
+export const dfs = (grid, start, end, mode = MOVEMENT_MODES.FOUR) => {
     if (start === end) return;
     const steps = [];
     const frontier = [start];
@@ -16,26 +16,15 @@ export const dfs = (grid, start, end) => {
         } else if (visiting.type !== 'start'){
             steps.push({cell: visiting, state: "visited"});
         }
-        for (const [dr, dc] of directions){
-            const newRow = visiting.row + dr;
-            const newCol = visiting.col + dc;
-
-            if (
-                newRow >= 0 &&
-                newRow < grid.nRows &&
-                newCol >= 0 &&
-                newCol < grid.nCols
-            ) {
-                const toVisit = grid.rows[newRow][newCol];
-                if (!visited.has(toVisit) && toVisit.type !== "wall"){
-                    cameFrom.set(toVisit, visiting);
-                    if (toVisit !== end){
-                        steps.push({cell: toVisit, state: "frontier"})
-                    }
-                    frontier.push(toVisit);
-                    visited.add(toVisit)
-                };
-            }
+        for (const { cell: toVisit } of getNeighbors(grid, visiting, mode)){
+            if (!visited.has(toVisit)){
+                cameFrom.set(toVisit, visiting);
+                if (toVisit !== end){
+                    steps.push({cell: toVisit, state: "frontier"})
+                }
+                frontier.push(toVisit);
+                visited.add(toVisit)
+            };
         }
     }
 

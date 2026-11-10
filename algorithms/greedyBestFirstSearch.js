@@ -1,11 +1,14 @@
-import {MinHeap, reconstructPath, terrainCosts, directions, destinationDistance} from "./helpers.js";
+import {MinHeap, reconstructPath, getNeighbors, movementDistance, MOVEMENT_MODES} from "./helpers.js";
 
-export const greedyBestFirstSearch = (grid, start, end) => {
+// Greedy only orders by distance, so it uses plain Manhattan (4-way) or
+// octile (8-way) distance. Unlike A*, it doesn't need an admissible
+// heuristic because it never guarantees an optimal path.
+export const greedyBestFirstSearch = (grid, start, end, mode = MOVEMENT_MODES.FOUR) => {
     const steps = [];
     const frontier = new MinHeap();
     const discovered = new Set();
     const cameFrom = new Map();
-    const startDist = destinationDistance(start, end);
+    const startDist = movementDistance(start, end, mode);
     let endFound = false;
     frontier.push(startDist, start);
     discovered.add(start);
@@ -17,26 +20,15 @@ export const greedyBestFirstSearch = (grid, start, end) => {
         };
         steps.push({cell: cheapestCell, state: "visited"});
 
-        for (const [dr, dc] of directions){
-            const newRow = cheapestCell.row + dr;
-            const newCol = cheapestCell.col + dc;
-
-            if (
-                newRow >= 0 &&
-                newRow < grid.nRows &&
-                newCol >= 0 &&
-                newCol < grid.nCols
-            ) {
-                const neighbor = grid.rows[newRow][newCol];
-                const neighborPriority = destinationDistance(neighbor, end);
-                if (neighbor.type !== "wall" && !discovered.has(neighbor)){
-                    frontier.push(neighborPriority, neighbor);
-                    discovered.add(neighbor);
-                    cameFrom.set(neighbor, cheapestCell);
-                    if (neighbor !== end){
-                            steps.push({cell: neighbor, state: "frontier"});
-                        };
-                };
+        for (const { cell: neighbor } of getNeighbors(grid, cheapestCell, mode)){
+            const neighborPriority = movementDistance(neighbor, end, mode);
+            if (!discovered.has(neighbor)){
+                frontier.push(neighborPriority, neighbor);
+                discovered.add(neighbor);
+                cameFrom.set(neighbor, cheapestCell);
+                if (neighbor !== end){
+                        steps.push({cell: neighbor, state: "frontier"});
+                    };
             };
         };
     }

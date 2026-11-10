@@ -1,6 +1,6 @@
-import {MinHeap, reconstructPath, terrainCosts, directions} from "./helpers.js";
+import {MinHeap, reconstructPath, terrainCosts, getNeighbors, MOVEMENT_MODES} from "./helpers.js";
 
-export const dijkstra = (grid, start, end) => {
+export const dijkstra = (grid, start, end, mode = MOVEMENT_MODES.FOUR) => {
     const steps = [];
     const frontier = new MinHeap();
     const distances = new Map();
@@ -22,31 +22,21 @@ export const dijkstra = (grid, start, end) => {
         }
         steps.push({cell: cheapestCell.cell, state: "visited"});
 
-        for (const [dr, dc] of directions){
-            const newRow = cheapestCell.cell.row + dr;
-            const newCol = cheapestCell.cell.col + dc;
-
-            if (
-                newRow >= 0 &&
-                newRow < grid.nRows &&
-                newCol >= 0 &&
-                newCol < grid.nCols
-            ) {
-                const neighbor = grid.rows[newRow][newCol];
-                if (!finalized.has(neighbor) && neighbor.type !== "wall"){
-                    neighborPriority = cheapestCell.priority + terrainCosts[neighbor.type]
-                    recordedPriority = distances.get(neighbor) ?? Infinity
-                    if (neighborPriority < recordedPriority) {
-                        cameFrom.set(neighbor, cheapestCell.cell);
-                        frontier.push(neighborPriority, neighbor);
-                        distances.set(neighbor, neighborPriority);
-                        if (neighbor !== end){
-                            steps.push({cell: neighbor, state: "frontier"})
-                        }
+        for (const { cell: neighbor, moveCost } of getNeighbors(grid, cheapestCell.cell, mode)){
+            if (!finalized.has(neighbor)){
+                // moveCost is 1 orthogonally and √2 diagonally.
+                neighborPriority = cheapestCell.priority + terrainCosts[neighbor.type] * moveCost
+                recordedPriority = distances.get(neighbor) ?? Infinity
+                if (neighborPriority < recordedPriority) {
+                    cameFrom.set(neighbor, cheapestCell.cell);
+                    frontier.push(neighborPriority, neighbor);
+                    distances.set(neighbor, neighborPriority);
+                    if (neighbor !== end){
+                        steps.push({cell: neighbor, state: "frontier"})
                     }
-                    
-                };
-            }
+                }
+
+            };
         }
     }
     if (endFound){

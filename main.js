@@ -5,6 +5,7 @@ import { createAlgorithmRunner } from './algorithms/algorithmRunner.js'
 import { setupGridInteractions } from "./gridInteractions.js";
 import { createTerrainRunner } from "./terrain/terrainRunner.js";
 import { setupPlaybackControls } from "./playbackControls.js";
+import { MOVEMENT_MODES } from "./algorithms/helpers.js";
 
 const cellSize = 25;
 
@@ -39,11 +40,65 @@ const terrainAnimator = new Animator(ctx);
 setupGridInteractions(canvas, () => grid, animator, terrainAnimator, ctx);
 setupPlaybackControls(animator);
 
+// "4" (orthogonal) or "8" (orthogonal + diagonal). Defaults to 4-way.
+let movementMode = MOVEMENT_MODES.FOUR;
+
 const algorithmRunner = createAlgorithmRunner(
     () => grid,
     animator,
-    ctx
+    ctx,
+    () => movementMode
 );
+
+const movementToggle = document.getElementById("movement-toggle-btn");
+const movementText = movementToggle.querySelector(".movement-text");
+const movementIcons = movementToggle.querySelectorAll(".movement-icon");
+
+const movementLabels = {
+    [MOVEMENT_MODES.FOUR]: {
+        text: "4-way",
+        ariaLabel: "Directions: 4-way. Click to switch to 8-way.",
+        title: "4-way: up, down, left and right only. Click to switch to 8-way."
+    },
+    [MOVEMENT_MODES.EIGHT]: {
+        text: "8-way",
+        ariaLabel: "Directions: 8-way. Click to switch to 4-way.",
+        title: "8-way: diagonals allowed, without cutting corners. Diagonal " +
+            "steps cost √2× the terrain cost. BFS and Bi-BFS count a diagonal " +
+            "as one move, so they find the fewest moves, not the shortest " +
+            "distance. Click to switch to 4-way."
+    }
+};
+
+function setMovementMode(mode) {
+    if (mode === movementMode) return;
+
+    movementMode = mode;
+
+    const label = movementLabels[mode];
+    movementText.textContent = label.text;
+    movementToggle.setAttribute("aria-label", label.ariaLabel);
+    movementToggle.title = label.title;
+
+    // SVG elements have no .hidden property (it only exists on HTML
+    // elements), so set the attribute directly.
+    movementIcons.forEach(icon => {
+        icon.toggleAttribute("hidden", icon.dataset.mode !== mode);
+    });
+
+    // The current search was for the other mode. Discard its playback and
+    // clear its colours, leaving terrain, walls, start and end untouched.
+    animator.clear();
+    grid.clearVisualization(ctx);
+}
+
+movementToggle.addEventListener("click", () => {
+    setMovementMode(
+        movementMode === MOVEMENT_MODES.FOUR
+            ? MOVEMENT_MODES.EIGHT
+            : MOVEMENT_MODES.FOUR
+    );
+});
 
 function runAlgorithm(name) {
     // Don't search a map that is still being generated.

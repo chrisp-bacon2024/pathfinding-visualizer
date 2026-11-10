@@ -14,7 +14,7 @@ const algorithms = {
     bidirectionalbfs: biBFS
 };
 
-export function createAlgorithmRunner(getGrid, animator, ctx){
+export function createAlgorithmRunner(getGrid, animator, ctx, getMovementMode = () => "4"){
     return function runAlgorithm(name){
         if (animator.running) return;
 
@@ -26,7 +26,7 @@ export function createAlgorithmRunner(getGrid, animator, ctx){
         // Clear previous search visualization
         grid.clearVisualization(ctx);
 
-        const steps = algorithm(grid, grid.start, grid.end);
+        const steps = algorithm(grid, grid.start, grid.end, getMovementMode());
 
         animator.load(steps);
         animator.start();
