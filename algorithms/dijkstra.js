@@ -33,13 +33,6 @@ export function dijkstra(grid, start, end){
                 newCol < grid.nCols
             ) {
                 const neighbor = grid.rows[newRow][newCol];
-                if (neighbor.type === "end") {
-                    console.log("Found end neighbor!", {
-                        sameObject: neighbor === end,
-                        finalized: finalized.has(neighbor),
-                        cost: terrainCosts[neighbor.type]
-                    });
-                }
                 if (!finalized.has(neighbor) && neighbor.type !== "wall"){
                     neighborPriority = cheapestCell.priority + terrainCosts[neighbor.type]
                     recordedPriority = distances.get(neighbor) ?? Infinity

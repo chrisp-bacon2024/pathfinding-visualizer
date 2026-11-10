@@ -23,7 +23,11 @@ export function reconstructPath(cameFrom, start, end, steps){
     path.reverse().forEach(node => {
         steps.push({cell: node, state: "path"});
     });
-}
+};
+
+export function destinationDistance(cell, destination){
+    return Math.abs(cell.row - destination.row) + Math.abs(cell.col - destination.col);
+};
 
 export class MinHeap{
     constructor(){

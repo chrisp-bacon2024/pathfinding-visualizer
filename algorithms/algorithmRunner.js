@@ -2,12 +2,14 @@ import { dfs } from "./dfs.js";
 import { bfs } from "./bfs.js";
 import { dijkstra } from "./dijkstra.js";
 import { aStar } from "./aStar.js"
+import { greedyBestFirstSearch } from "./greedyBestFirstSearch.js";
 
 const algorithms = {
     dfs,
     bfs,
     dijkstra,
-    astar: aStar
+    astar: aStar,
+    greedy: greedyBestFirstSearch
 };
 
 export function createAlgorithmRunner(getGrid, animator, ctx){
