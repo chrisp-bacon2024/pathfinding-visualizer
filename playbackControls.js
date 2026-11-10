@@ -2,6 +2,21 @@
 export function setupPlaybackControls(animator) {
     const playPauseButton = document.getElementById("play-pause-btn");
     const speedSelect = document.getElementById("playback-speed");
+    const slider = document.getElementById("playback-slider");
+
+    // Display-only for now: block dragging/clicking until
+    // scrubbing is implemented. Remove this line to re-enable input.
+    slider.inert = true;
+
+    const renderProgress = (current, total) => {
+        // Use one slider unit per step so scrubbing can map
+        // slider values straight to step indexes later.
+        slider.max = String(Math.max(total, 1));
+        slider.value = String(current);
+    };
+
+    animator.subscribeProgress(renderProgress);
+    renderProgress(animator.currentStep, animator.steps.length);
 
     const applySpeed = () => {
         animator.setSpeedMultiplier(Number(speedSelect.value));

@@ -13,6 +13,7 @@ export class Animator {
         this.onCancel = null;
         this.runId = 0;
         this.listeners = new Set();
+        this.progressListeners = new Set();
 
         // User-chosen speed multiplier (1 = normal). Kept across loads.
         this.speedMultiplier = 1;
@@ -43,6 +44,20 @@ export class Animator {
         this.listeners.forEach(listener => listener(state));
     }
 
+    // Register a callback that fires whenever playback advances,
+    // called with (currentStep, totalSteps).
+    // Returns a function that removes the callback.
+    subscribeProgress(listener) {
+        this.progressListeners.add(listener);
+        return () => this.progressListeners.delete(listener);
+    }
+
+    notifyProgress() {
+        const current = this.currentStep;
+        const total = this.steps.length;
+        this.progressListeners.forEach(listener => listener(current, total));
+    }
+
     load(steps, options = {}) {
         this.stop();
 
@@ -56,6 +71,8 @@ export class Animator {
 
         this.onComplete = options.onComplete ?? null;
         this.onCancel = options.onCancel ?? null;
+
+        this.notifyProgress();
     }
 
     start() {
@@ -116,6 +133,8 @@ export class Animator {
         const interval =
             1000 / (this.playbackSpeed * this.speedMultiplier);
 
+        const stepBefore = this.currentStep;
+
         while (
             this.accumulator >= interval &&
             this.currentStep < this.steps.length
@@ -131,6 +150,10 @@ export class Animator {
 
             this.currentStep++;
             this.accumulator -= interval;
+        }
+
+        if (this.currentStep !== stepBefore) {
+            this.notifyProgress();
         }
 
         if (this.currentStep >= this.steps.length) {
