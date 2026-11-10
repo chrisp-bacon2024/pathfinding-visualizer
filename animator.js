@@ -13,6 +13,15 @@ export class Animator {
         this.onCancel = null;
         this.runId = 0;
         this.listeners = new Set();
+
+        // User-chosen speed multiplier (1 = normal). Kept across loads.
+        this.speedMultiplier = 1;
+    }
+
+    setSpeedMultiplier(multiplier) {
+        if (!Number.isFinite(multiplier) || multiplier <= 0) return;
+
+        this.speedMultiplier = multiplier;
     }
 
     // "playing", "paused" or "idle".
@@ -103,7 +112,9 @@ export class Animator {
         this.lastTime = time;
         this.accumulator += delta;
 
-        const interval = 1000 / this.playbackSpeed;
+        // Read every frame so speed changes apply mid-playback.
+        const interval =
+            1000 / (this.playbackSpeed * this.speedMultiplier);
 
         while (
             this.accumulator >= interval &&
