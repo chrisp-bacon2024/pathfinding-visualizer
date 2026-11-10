@@ -6,11 +6,32 @@ export class Animator {
         this.steps = [];
         this.currentStep = 0;
         this.running = false;
+        this.paused = false;
         this.lastTime = 0;
         this.accumulator = 0;
         this.onComplete = null;
         this.onCancel = null;
         this.runId = 0;
+        this.listeners = new Set();
+    }
+
+    // "playing", "paused" or "idle".
+    get state() {
+        if (this.running) return "playing";
+        if (this.paused) return "paused";
+        return "idle";
+    }
+
+    // Register a callback that fires whenever the playback state changes.
+    // Returns a function that removes the callback.
+    subscribe(listener) {
+        this.listeners.add(listener);
+        return () => this.listeners.delete(listener);
+    }
+
+    notify() {
+        const state = this.state;
+        this.listeners.forEach(listener => listener(state));
     }
 
     load(steps, options = {}) {
@@ -32,11 +53,43 @@ export class Animator {
         if (this.running) return;
 
         this.running = true;
+        this.paused = false;
         this.lastTime = 0;
 
         const runId = ++this.runId;
 
         requestAnimationFrame(time => this.animate(time, runId));
+        this.notify();
+    }
+
+    // Freeze playback in place. Steps, progress and callbacks are kept.
+    pause() {
+        if (!this.running) return;
+
+        this.running = false;
+        this.paused = true;
+
+        // Invalidate the pending animation frame.
+        this.runId++;
+
+        this.notify();
+    }
+
+    // Continue from the step where playback was paused.
+    resume() {
+        if (!this.paused) return;
+
+        // start() resets lastTime, so the time spent paused
+        // does not count towards the next frame.
+        this.start();
+    }
+
+    togglePause() {
+        if (this.running) {
+            this.pause();
+        } else if (this.paused) {
+            this.resume();
+        }
     }
 
     animate(time, runId) {
@@ -76,6 +129,7 @@ export class Animator {
             this.onComplete = null;
             this.onCancel = null;
 
+            this.notify();
             onComplete?.();
             return;
         }
@@ -84,15 +138,17 @@ export class Animator {
     }
 
     stop() {
-        const wasRunning = this.running;
+        const wasActive = this.running || this.paused;
         const onCancel = this.onCancel;
 
         this.running = false;
+        this.paused = false;
         this.runId++;
         this.onComplete = null;
         this.onCancel = null;
 
-        if (wasRunning) {
+        if (wasActive) {
+            this.notify();
             onCancel?.();
         }
     }

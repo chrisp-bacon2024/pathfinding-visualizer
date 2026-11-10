@@ -46,6 +46,10 @@ export function setupGridInteractions(canvas, getGrid, animator, ctx){
     canvas.addEventListener("mousedown", event => {
         if (event.button !== 0 || animator.running) return;
 
+        // Editing the grid ends a paused playback, since the
+        // remaining steps would no longer match the grid.
+        if (animator.paused) animator.stop();
+
         const grid = getGrid();
         const cell = grid.getCellAt(event.offsetX, event.offsetY);
         if (!cell) return;

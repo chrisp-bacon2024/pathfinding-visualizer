@@ -4,6 +4,7 @@ import { Animator } from './animator.js';
 import { createAlgorithmRunner } from './algorithms/algorithmRunner.js'
 import { setupGridInteractions } from "./gridInteractions.js";
 import { createTerrainRunner } from "./terrain/terrainRunner.js";
+import { setupPlaybackControls } from "./playbackControls.js";
 
 const cellSize = 25;
 
@@ -30,6 +31,7 @@ let grid = createGrid();
 const animator = new Animator(ctx, 30);
 
 setupGridInteractions(canvas, () => grid, animator, ctx);
+setupPlaybackControls(animator);
 
 const runAlgorithm = createAlgorithmRunner(
     () => grid,
