@@ -5,6 +5,10 @@ export class Animator {
         this.speed = speed;
         this.steps = [];
         this.currentStep = 0;
+
+        // history[i] holds the state a cell had before steps[i]
+        // was applied, so the step can be undone when scrubbing back.
+        this.history = [];
         this.running = false;
         this.paused = false;
         this.lastTime = 0;
@@ -62,6 +66,7 @@ export class Animator {
         this.stop();
 
         this.steps = steps;
+        this.history = [];
         this.currentStep = 0;
         this.accumulator = 0;
 
@@ -139,14 +144,7 @@ export class Animator {
             this.accumulator >= interval &&
             this.currentStep < this.steps.length
         ) {
-            const step = this.steps[this.currentStep];
-
-            if (step.type === "terrain") {
-                step.cell.setType(step.terrainType, this.ctx);
-                step.cell.setSearchState("idle", this.ctx);
-            } else {
-                step.cell.setSearchState(step.state, this.ctx);
-            }
+            this.applyStep(this.currentStep);
 
             this.currentStep++;
             this.accumulator -= interval;
@@ -169,6 +167,80 @@ export class Animator {
         }
 
         requestAnimationFrame(time => this.animate(time, runId));
+    }
+
+    applyStep(index) {
+        const step = this.steps[index];
+        const { cell } = step;
+
+        this.history[index] = {
+            type: cell.type,
+            searchState: cell.searchState
+        };
+
+        if (step.type === "terrain") {
+            cell.setType(step.terrainType, this.ctx);
+            cell.setSearchState("idle", this.ctx);
+        } else {
+            cell.setSearchState(step.state, this.ctx);
+        }
+    }
+
+    undoStep(index) {
+        const { cell } = this.steps[index];
+        const previous = this.history[index];
+
+        if (!previous) return;
+
+        cell.setType(previous.type, this.ctx);
+        cell.setSearchState(previous.searchState, this.ctx);
+    }
+
+    // Jump to a step index, applying or undoing steps on the grid.
+    // Auto-pauses a running playback. Seeking a finished playback
+    // back from the end puts it into the paused state so it can be replayed.
+    seek(targetStep) {
+        if (this.steps.length === 0) return;
+
+        const target = Math.max(
+            0,
+            Math.min(Math.round(targetStep), this.steps.length)
+        );
+
+        this.pause();
+
+        while (this.currentStep < target) {
+            this.applyStep(this.currentStep);
+            this.currentStep++;
+        }
+
+        while (this.currentStep > target) {
+            this.currentStep--;
+            this.undoStep(this.currentStep);
+        }
+
+        // Don't let leftover frame time cause a burst on resume.
+        this.accumulator = 0;
+
+        if (!this.paused && this.currentStep < this.steps.length) {
+            this.paused = true;
+            this.notify();
+        }
+
+        this.notifyProgress();
+    }
+
+    // Stop and forget the loaded steps. Use when the grid changes
+    // outside playback, since the recorded history no longer applies.
+    clear() {
+        this.stop();
+
+        this.steps = [];
+        this.history = [];
+        this.currentStep = 0;
+        this.accumulator = 0;
+
+        this.notifyProgress();
     }
 
     stop() {

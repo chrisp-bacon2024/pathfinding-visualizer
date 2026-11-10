@@ -119,7 +119,8 @@ const observer = new ResizeObserver(() => {
 
     if (rows === grid.nRows && cols === grid.nCols) return;
 
-    animator.stop();
+    // The loaded steps point at the old grid's cells.
+    animator.clear();
     grid = createGrid();
 });
 

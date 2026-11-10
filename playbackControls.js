@@ -4,9 +4,17 @@ export function setupPlaybackControls(animator) {
     const speedSelect = document.getElementById("playback-speed");
     const slider = document.getElementById("playback-slider");
 
-    // Display-only for now: block dragging/clicking until
-    // scrubbing is implemented. Remove this line to re-enable input.
-    slider.inert = true;
+    // Pause as soon as the slider is grabbed, so playback doesn't
+    // move the handle out from under the cursor before it's dragged.
+    slider.addEventListener("pointerdown", () => {
+        animator.pause();
+    });
+
+    // Fires continuously while dragging (and on arrow keys),
+    // so the grid updates live.
+    slider.addEventListener("input", () => {
+        animator.seek(Number(slider.value));
+    });
 
     const renderProgress = (current, total) => {
         // Use one slider unit per step so scrubbing can map
