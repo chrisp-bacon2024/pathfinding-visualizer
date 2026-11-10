@@ -1,7 +1,10 @@
 import { hoverInteractions } from "./cellStyles.js"
 
-export function setupGridInteractions(canvas, getGrid, animator, ctx){
+export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator, ctx){
     let selectedBrush = "wall";
+
+    // Block grid edits while an algorithm or map generation is animating.
+    const isAnimating = () => animator.running || terrainAnimator.running;
 
     const brushShortcuts = {
         w: "wall",
@@ -44,7 +47,7 @@ export function setupGridInteractions(canvas, getGrid, animator, ctx){
     
     // Start painting or dragging.
     canvas.addEventListener("mousedown", event => {
-        if (event.button !== 0 || animator.running) return;
+        if (event.button !== 0 || isAnimating()) return;
 
         // Editing the grid discards any loaded playback (paused or
         // finished), since its steps and undo history no longer match.
@@ -89,7 +92,7 @@ export function setupGridInteractions(canvas, getGrid, animator, ctx){
             grid.hoveredCell = cell;
         }
 
-        if (!animator.running && cell) {
+        if (!isAnimating() && cell) {
             if (
                 grid.interactionMode === "draggingStart" ||
                 grid.interactionMode === "draggingEnd"

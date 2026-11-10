@@ -28,16 +28,29 @@ const createGrid = () => {
 
 let grid = createGrid();
 
+// Algorithm playback. This is the only animator the playback
+// controls (slider, play/pause, speed) are connected to.
 const animator = new Animator(ctx, 30);
 
-setupGridInteractions(canvas, () => grid, animator, ctx);
+// Map generation gets its own animator so it never moves the
+// playback slider or responds to the playback controls.
+const terrainAnimator = new Animator(ctx);
+
+setupGridInteractions(canvas, () => grid, animator, terrainAnimator, ctx);
 setupPlaybackControls(animator);
 
-const runAlgorithm = createAlgorithmRunner(
+const algorithmRunner = createAlgorithmRunner(
     () => grid,
     animator,
     ctx
 );
+
+function runAlgorithm(name) {
+    // Don't search a map that is still being generated.
+    if (terrainAnimator.running) return;
+
+    algorithmRunner(name);
+}
 
 function animateTerrain(changes, duration = 2000) {
     return new Promise(resolve => {
@@ -52,13 +65,13 @@ function animateTerrain(changes, duration = 2000) {
             terrainType: change.type
         }));
 
-        animator.load(steps, {
+        terrainAnimator.load(steps, {
             duration,
             onComplete: () => resolve(true),
             onCancel: () => resolve(false)
         });
 
-        animator.start();
+        terrainAnimator.start();
     });
 }
 
@@ -74,7 +87,13 @@ const runTerrainGenerator = createTerrainRunner(
 );
 
 async function generateMap() {
-    animator.stop();
+    // Cancel any map generation already in progress.
+    terrainAnimator.stop();
+
+    // A new map invalidates any algorithm playback: its steps and
+    // undo history refer to the old terrain. This also resets the slider.
+    animator.clear();
+
     grid.resetTerrain("grass", ctx);
 
     const stages = [
@@ -121,6 +140,7 @@ const observer = new ResizeObserver(() => {
 
     // The loaded steps point at the old grid's cells.
     animator.clear();
+    terrainAnimator.stop();
     grid = createGrid();
 });
 
