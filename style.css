@@ -94,6 +94,19 @@ body {
 
 /* Algorithm buttons */
 
+/* Two rows: 5 buttons on the first, the rest on the second. */
+.algorithm-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    gap: 6px;
+}
+
+@media (max-width: 700px) {
+    .algorithm-buttons {
+        grid-template-columns: repeat(3, auto);
+    }
+}
+
 .algorithm-btn.selected {
     background: #dbeafe;
     border-color: #2563eb;
