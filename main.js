@@ -1,7 +1,7 @@
 
 import { Grid } from './grid.js';
 import { Animator } from './animator.js';
-import { createAlgorithmRunner } from './algorithms/algorithmRunner.js'
+import { createAlgorithmRunner, hasAlgorithm } from './algorithms/algorithmRunner.js'
 import { setupGridInteractions } from "./gridInteractions.js";
 import { createTerrainRunner } from "./terrain/terrainRunner.js";
 import { setupPlaybackControls } from "./playbackControls.js";
@@ -9,6 +9,9 @@ import { MOVEMENT_MODES } from "./algorithms/helpers.js";
 import { PathOverlay } from "./pathOverlay.js";
 import { algorithmColors } from "./cellStyles.js";
 import { setupDropdown } from "./dropdown.js";
+import { computeRunStats } from "./runStats.js";
+import { algorithmInfo } from "./algorithmInfo.js";
+import { setupAlgorithmTooltip } from "./algorithmTooltip.js";
 
 const cellSize = 25;
 
@@ -25,6 +28,18 @@ algorithmButtons.forEach(button => {
     if (color) button.style.setProperty("--path-color", color);
 });
 
+// Cost, moves, cells explored and time for each algorithm in the
+// comparison, shown in the algorithm tooltips.
+const runStats = new Map();
+
+const algorithmTooltip = setupAlgorithmTooltip({
+    buttons: algorithmButtons,
+    info: algorithmInfo,
+    colors: algorithmColors,
+    getStats: () => runStats,
+    isImplemented: hasAlgorithm
+});
+
 // Algorithm paths, drawn as coloured lines above the grid. Paths from
 // earlier runs stay until the grid changes or Clear Paths is pressed.
 const pathOverlay = new PathOverlay(document.getElementById("pathCanvas"), {
@@ -35,6 +50,12 @@ const pathOverlay = new PathOverlay(document.getElementById("pathCanvas"), {
         algorithmButtons.forEach(button => {
             button.classList.toggle("has-path", names.includes(button.dataset.algorithm));
         });
+
+        // Stats follow the comparison: cleared together with the paths.
+        for (const name of runStats.keys()) {
+            if (!names.includes(name)) runStats.delete(name);
+        }
+        algorithmTooltip.refresh();
     }
 });
 
@@ -85,7 +106,15 @@ const algorithmRunner = createAlgorithmRunner(
     animator,
     ctx,
     () => movementMode,
-    (name, steps, runGrid) => pathOverlay.startRun(name, steps, runGrid.start, runGrid.end)
+    (name, steps, runGrid, elapsedMs) => {
+        runStats.set(name, computeRunStats({
+            grid: runGrid,
+            steps,
+            mode: movementMode,
+            elapsedMs
+        }));
+        pathOverlay.startRun(name, steps, runGrid.start, runGrid.end);
+    }
 );
 
 const movementToggle = document.getElementById("movement-toggle-btn");

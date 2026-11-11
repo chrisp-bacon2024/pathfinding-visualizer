@@ -510,6 +510,125 @@ body {
     box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.55);
 }
 
+/* Algorithm tooltip (algorithmTooltip.js) */
+
+.algorithm-tooltip {
+    position: fixed;
+    z-index: 30;
+    max-width: min(360px, calc(100vw - 16px));
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.35;
+    pointer-events: none;
+}
+
+.algorithm-tooltip[hidden] {
+    display: none;
+}
+
+.tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tooltip-title {
+    color: #284a63;
+    font-size: 14px;
+}
+
+.tooltip-swatch {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.55);
+}
+
+.tooltip-badge {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.tooltip-badge-best {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.tooltip-badge-none {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.tooltip-description {
+    margin: 6px 0 0;
+}
+
+.tooltip-note {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-style: italic;
+}
+
+.tooltip-table {
+    width: 100%;
+    margin-top: 8px;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.tooltip-table th {
+    padding: 0 0 3px 8px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tooltip-table td {
+    padding: 2px 0 2px 8px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tooltip-table .tooltip-row-name {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 0;
+    text-align: left;
+}
+
+/* The hovered algorithm's row. */
+.tooltip-table tr.current td {
+    background: #eff6ff;
+    font-weight: 700;
+}
+
+/* Lowest value in a column. */
+.tooltip-table td.best {
+    color: #15803d;
+    font-weight: 700;
+}
+
+.tooltip-table .tooltip-muted {
+    color: #94a3b8;
+    font-style: italic;
+}
+
 /* Responsive */
 
 @media (max-width: 700px) {
