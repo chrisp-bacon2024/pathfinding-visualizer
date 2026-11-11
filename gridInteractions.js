@@ -1,6 +1,8 @@
 import { hoverInteractions } from "./cellStyles.js"
 
-export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator, ctx){
+// onGridEdit runs when the user starts editing the grid, so anything
+// computed for the old grid (playback, kept paths) can be cleared.
+export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator, ctx, onGridEdit = () => animator.clear()){
     let selectedBrush = "wall";
 
     // Block grid edits while an algorithm or map generation is animating.
@@ -50,8 +52,8 @@ export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator
         if (event.button !== 0 || isAnimating()) return;
 
         // Editing the grid discards any loaded playback (paused or
-        // finished), since its steps and undo history no longer match.
-        animator.clear();
+        // finished) and kept paths, since they no longer match the grid.
+        onGridEdit();
 
         const grid = getGrid();
         const cell = grid.getCellAt(event.offsetX, event.offsetY);

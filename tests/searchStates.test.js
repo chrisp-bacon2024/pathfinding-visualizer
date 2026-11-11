@@ -36,7 +36,9 @@ function overlayFill(cell) {
 const SCANNED = cellStyles.searchStates.scanned.fill;
 const FRONTIER = cellStyles.searchStates.frontier.fill;
 const VISITED = cellStyles.searchStates.visited.fill;
-const PATH = cellStyles.searchStates.path.fill;
+// Path cells have no overlay: the path is drawn as a line on the
+// path overlay canvas instead (see pathOverlay.test.js).
+const PATH = null;
 
 test("scanned is a valid search state with its own muted purple overlay", () => {
     assert.equal(SCANNED, "#8B7BC8");
@@ -50,10 +52,10 @@ test("scanned is a valid search state with its own muted purple overlay", () => 
     assert.notEqual(SCANNED, VISITED);
 });
 
-test("existing states still draw their original overlays", () => {
+test("frontier and visited draw their overlays; path cells show plain terrain", () => {
     const cell = new Cell(0, 0, "mud", 20);
 
-    for (const [state, fill] of [["frontier", "#3B82F6"], ["visited", "#06B6D4"], ["path", "#FACC15"]]) {
+    for (const [state, fill] of [["frontier", "#3B82F6"], ["visited", "#06B6D4"], ["path", null]]) {
         cell.setSearchState(state);
         assert.equal(overlayFill(cell), fill, state);
     }

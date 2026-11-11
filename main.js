@@ -6,6 +6,8 @@ import { setupGridInteractions } from "./gridInteractions.js";
 import { createTerrainRunner } from "./terrain/terrainRunner.js";
 import { setupPlaybackControls } from "./playbackControls.js";
 import { MOVEMENT_MODES } from "./algorithms/helpers.js";
+import { PathOverlay } from "./pathOverlay.js";
+import { algorithmColors } from "./cellStyles.js";
 
 const cellSize = 25;
 
@@ -13,6 +15,27 @@ const cellSize = 25;
 const canvas = document.getElementById("gridCanvas");
 const container = document.querySelector(".gridContainer");
 const ctx = canvas.getContext("2d");
+
+const algorithmButtons = document.querySelectorAll(".algorithm-btn");
+
+// Each button's sliver uses its algorithm's path colour.
+algorithmButtons.forEach(button => {
+    const color = algorithmColors[button.dataset.algorithm];
+    if (color) button.style.setProperty("--path-color", color);
+});
+
+// Algorithm paths, drawn as coloured lines above the grid. Paths from
+// earlier runs stay until the grid changes or Clear Paths is pressed.
+const pathOverlay = new PathOverlay(document.getElementById("pathCanvas"), {
+    cellSize,
+    order: [...algorithmButtons].map(button => button.dataset.algorithm),
+    colors: algorithmColors,
+    onChange: names => {
+        algorithmButtons.forEach(button => {
+            button.classList.toggle("has-path", names.includes(button.dataset.algorithm));
+        });
+    }
+});
 
 const createGrid = () => {
     const cols = Math.floor(container.clientWidth / cellSize);
@@ -23,6 +46,7 @@ const createGrid = () => {
 
     const newGrid = new Grid(rows, cols, cellSize);
     newGrid.draw(ctx);
+    pathOverlay.resize(canvas.width, canvas.height);
 
     return newGrid;
 };
@@ -37,8 +61,20 @@ const animator = new Animator(ctx, 30);
 // playback slider or responds to the playback controls.
 const terrainAnimator = new Animator(ctx);
 
-setupGridInteractions(canvas, () => grid, animator, terrainAnimator, ctx);
+// Removes every kept path, the current playback and its search
+// colours. Used whenever the grid changes, since paths found on the old
+// grid no longer apply, and by the Clear Paths button.
+function clearComparison() {
+    animator.clear();
+    pathOverlay.clear();
+    grid.clearVisualization(ctx);
+}
+
+setupGridInteractions(canvas, () => grid, animator, terrainAnimator, ctx, clearComparison);
 setupPlaybackControls(animator);
+
+// Grow and shrink the current path line with playback and scrubbing.
+animator.subscribeProgress(current => pathOverlay.setProgress(current));
 
 // "4" (orthogonal) or "8" (orthogonal + diagonal). Defaults to 4-way.
 let movementMode = MOVEMENT_MODES.FOUR;
@@ -47,7 +83,8 @@ const algorithmRunner = createAlgorithmRunner(
     () => grid,
     animator,
     ctx,
-    () => movementMode
+    () => movementMode,
+    (name, steps, runGrid) => pathOverlay.startRun(name, steps, runGrid.start, runGrid.end)
 );
 
 const movementToggle = document.getElementById("movement-toggle-btn");
@@ -86,10 +123,9 @@ function setMovementMode(mode) {
         icon.toggleAttribute("hidden", icon.dataset.mode !== mode);
     });
 
-    // The current search was for the other mode. Discard its playback and
-    // clear its colours, leaving terrain, walls, start and end untouched.
-    animator.clear();
-    grid.clearVisualization(ctx);
+    // Paths found in the other mode no longer apply. Clears them, the
+    // playback and its colours, leaving terrain, walls, start and end.
+    clearComparison();
 }
 
 movementToggle.addEventListener("click", () => {
@@ -100,11 +136,23 @@ movementToggle.addEventListener("click", () => {
     );
 });
 
+// Highlight the button of the most recently run algorithm.
+function markLastRun(name) {
+    algorithmButtons.forEach(button => {
+        const isLastRun = button.dataset.algorithm === name;
+
+        button.classList.toggle("selected", isLastRun);
+        button.setAttribute("aria-pressed", String(isLastRun));
+    });
+}
+
 function runAlgorithm(name) {
     // Don't search a map that is still being generated.
     if (terrainAnimator.running) return;
 
-    algorithmRunner(name);
+    if (algorithmRunner(name)) {
+        markLastRun(name);
+    }
 }
 
 function animateTerrain(changes, duration = 2000) {
@@ -130,7 +178,7 @@ function animateTerrain(changes, duration = 2000) {
     });
 }
 
-document.querySelectorAll(".algorithm-btn").forEach(button => {
+algorithmButtons.forEach(button => {
     button.addEventListener("click", () => {
         runAlgorithm(button.dataset.algorithm)
     });
@@ -145,9 +193,9 @@ async function generateMap() {
     // Cancel any map generation already in progress.
     terrainAnimator.stop();
 
-    // A new map invalidates any algorithm playback: its steps and
-    // undo history refer to the old terrain. This also resets the slider.
-    animator.clear();
+    // A new map invalidates any algorithm playback and kept paths: they
+    // refer to the old terrain. This also resets the slider.
+    clearComparison();
 
     grid.resetTerrain("grass", ctx);
 
@@ -168,6 +216,9 @@ async function generateMap() {
 
 document.querySelector("#generate-map-btn")
     .addEventListener("click", generateMap);
+
+document.querySelector("#clear-paths-btn")
+    .addEventListener("click", clearComparison);
 
 const algorithmShortcuts = {
     d: "dfs",
@@ -193,8 +244,9 @@ const observer = new ResizeObserver(() => {
 
     if (rows === grid.nRows && cols === grid.nCols) return;
 
-    // The loaded steps point at the old grid's cells.
+    // The loaded steps and kept paths point at the old grid's cells.
     animator.clear();
+    pathOverlay.clear();
     terrainAnimator.stop();
     grid = createGrid();
 });

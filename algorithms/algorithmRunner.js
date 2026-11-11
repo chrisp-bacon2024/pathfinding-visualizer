@@ -16,12 +16,13 @@ const algorithms = {
     jps
 };
 
-export function createAlgorithmRunner(getGrid, animator, ctx, getMovementMode = () => "4"){
+export function createAlgorithmRunner(getGrid, animator, ctx, getMovementMode = () => "4", onRunStart = () => {}){
+    // Returns true if the algorithm started, false if the run was ignored.
     return function runAlgorithm(name){
-        if (animator.running) return;
+        if (animator.running) return false;
 
         const algorithm = algorithms[name];
-        if (!algorithm) return;
+        if (!algorithm) return false;
 
         const grid = getGrid();
 
@@ -30,7 +31,11 @@ export function createAlgorithmRunner(getGrid, animator, ctx, getMovementMode = 
 
         const steps = algorithm(grid, grid.start, grid.end, getMovementMode());
 
+        // Lets the path overlay record the run before playback starts.
+        onRunStart(name, steps, grid);
+
         animator.load(steps);
         animator.start();
+        return true;
     }
 }

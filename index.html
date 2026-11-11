@@ -85,6 +85,11 @@
                     <button id="generate-map-btn" class="generate-btn">
                         Generate Map
                     </button>
+
+                    <button id="clear-paths-btn" class="clear-paths-btn"
+                            title="Clear all algorithm paths and search colours">
+                        Clear Paths
+                    </button>
                 </div>
 
                 <div class="toolbar-group playback-group">
@@ -115,7 +120,12 @@
             </div>
 
             <main class="gridContainer">
-                <canvas id="gridCanvas"></canvas>
+                <!-- Paths are drawn on their own canvas above the grid
+                     (see pathOverlay.js). -->
+                <div class="canvas-stack">
+                    <canvas id="gridCanvas"></canvas>
+                    <canvas id="pathCanvas" aria-hidden="true"></canvas>
+                </div>
             </main>
         </div>
 

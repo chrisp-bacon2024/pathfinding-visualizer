@@ -54,12 +54,9 @@ export const cellStyles = {
             borderWidth: 0.75
         },
     
-        path: {
-            fill: "#FACC15",
-            opacity: 0.35,
-            border: "#EAB308",
-            borderWidth: 1
-        }
+        // Path cells show plain terrain: the path itself is drawn as a
+        // coloured line on the path overlay (pathOverlay.js).
+        path: {}
     },
 
     interactions: {
@@ -81,6 +78,20 @@ export const cellStyles = {
             borderWidth: 3
         }
     }
+};
+
+// Path line colour for each algorithm (keys match data-algorithm in
+// index.html). Also shown as a sliver on the algorithm's button.
+export const algorithmColors = {
+    dfs: "#F97316",
+    bfs: "#FACC15",
+    dijkstra: "#EC4899",
+    astar: "#EF4444",
+    greedy: "#A855F7",
+    bidirectionalbfs: "#22D3EE",
+    jps: "#3B82F6",
+    bellmanford: "#FFFFFF",
+    thetastar: "#A3E635"
 };
 
 export const hoverInteractions = {
