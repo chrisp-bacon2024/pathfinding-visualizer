@@ -13,8 +13,8 @@
             </header>
 
             <div class="toolbar">
-                <div class="toolbar-group">
-                    <span class="toolbar-label">Algorithms</span>
+                <section class="toolbar-section" aria-labelledby="algorithms-title">
+                    <h2 id="algorithms-title" class="toolbar-section-title">Algorithms</h2>
 
                     <div class="algorithm-buttons">
                         <!-- Not an algorithm: movement mode switch, sized to fit
@@ -68,32 +68,40 @@
                         <button class="algorithm-btn" data-algorithm="thetastar"
                                 title="Theta*">Theta*</button>
                     </div>
-                </div>
+                </section>
 
-                <div class="toolbar-group">
-                    <span class="toolbar-label">Paint:</span>
+                <section class="toolbar-section" aria-labelledby="terrain-title">
+                    <h2 id="terrain-title" class="toolbar-section-title">Terrain</h2>
 
-                    <button class="terrain-btn selected" data-brush="wall" aria-pressed="true">Wall</button>
-                    <button class="terrain-btn" data-brush="grass" aria-pressed="false">Grass</button>
-                    <button class="terrain-btn" data-brush="mud" aria-pressed="false">Mud</button>
-                    <button class="terrain-btn" data-brush="road" aria-pressed="false">Road</button>
-                </div>
+                    <!-- Two rows (label | buttons) that line up with the two
+                         rows of algorithm buttons. -->
+                    <div class="terrain-rows">
+                        <span id="paint-label" class="toolbar-label">Paint:</span>
+                        <div class="terrain-buttons" role="group" aria-labelledby="paint-label">
+                            <button class="terrain-btn selected" data-brush="wall" aria-pressed="true">Wall</button>
+                            <button class="terrain-btn" data-brush="grass" aria-pressed="false">Grass</button>
+                            <button class="terrain-btn" data-brush="mud" aria-pressed="false">Mud</button>
+                            <button class="terrain-btn" data-brush="road" aria-pressed="false">Road</button>
+                        </div>
 
-                <div class="toolbar-group">
-                    <span class="toolbar-label">Generate:</span>
+                        <!-- Both buttons act on the whole map: one builds a new
+                             one, the other wipes the paths drawn on it. -->
+                        <span id="map-label" class="toolbar-label">Map:</span>
+                        <div class="terrain-buttons" role="group" aria-labelledby="map-label">
+                            <button id="generate-map-btn" class="generate-btn">
+                                Generate Map
+                            </button>
 
-                    <button id="generate-map-btn" class="generate-btn">
-                        Generate Map
-                    </button>
+                            <button id="clear-paths-btn" class="clear-paths-btn"
+                                    title="Clear all algorithm paths and search colours">
+                                Clear Paths
+                            </button>
+                        </div>
+                    </div>
+                </section>
 
-                    <button id="clear-paths-btn" class="clear-paths-btn"
-                            title="Clear all algorithm paths and search colours">
-                        Clear Paths
-                    </button>
-                </div>
-
-                <div class="toolbar-group playback-group">
-                    <span class="toolbar-label">Playback:</span>
+                <section class="toolbar-section playback-section" aria-labelledby="playback-title">
+                    <h2 id="playback-title" class="toolbar-section-title">Playback</h2>
 
                     <div class="playback-controls">
                         <input type="range" id="playback-slider" class="playback-slider"
@@ -116,7 +124,7 @@
                             </select>
                         </div>
                     </div>
-                </div>
+                </section>
             </div>
 
             <main class="gridContainer">
