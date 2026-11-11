@@ -3,13 +3,16 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <!-- Without this, phones render the page at desktop width and
+             shrink it, so the small-screen layouts never kick in. -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Pathfinding Visualizer</title>
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
         <div class="app">
             <header class="pageHeader">
-                <h1>Pathfinding Visualizer</h1>
+                <h1 class="pageTitle">Pathfinding Visualizer</h1>
             </header>
 
             <div class="toolbar">
@@ -48,25 +51,41 @@
                             </button>
                         </div>
 
-                        <button class="algorithm-btn" data-algorithm="dfs"
-                                title="Depth-First Search">DFS</button>
-                        <button class="algorithm-btn" data-algorithm="bfs"
-                                title="Breadth-First Search">BFS</button>
-                        <button class="algorithm-btn" data-algorithm="dijkstra"
-                                title="Dijkstra's Algorithm">Dijkstra</button>
-                        <button class="algorithm-btn" data-algorithm="astar"
-                                title="A* Search">A*</button>
+                        <!-- On wide screens the wrapper and menu use display: contents,
+                             so the buttons sit in the grid above. On small screens
+                             they become a dropdown opened by the trigger
+                             (see dropdown.js). -->
+                        <div class="dropdown" data-dropdown>
+                            <button type="button" class="dropdown-trigger algorithm-trigger"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    data-placeholder="Run…" aria-label="Choose an algorithm to run">
+                                <span class="dropdown-trigger-text">Run…</span>
+                                <span class="dropdown-dots" aria-hidden="true"></span>
+                                <span class="dropdown-caret" aria-hidden="true">▾</span>
+                            </button>
 
-                        <button class="algorithm-btn" data-algorithm="greedy"
-                                title="Greedy Best-First Search">Greedy</button>
-                        <button class="algorithm-btn" data-algorithm="bidirectionalbfs"
-                                title="Bidirectional BFS">Bi-BFS</button>
-                        <button class="algorithm-btn" data-algorithm="jps"
-                                title="Jump Point Search">JPS</button>
-                        <button class="algorithm-btn" data-algorithm="bellmanford"
-                                title="Bellman-Ford">Bellman-Ford</button>
-                        <button class="algorithm-btn" data-algorithm="thetastar"
-                                title="Theta*">Theta*</button>
+                            <div class="dropdown-menu">
+                                <button class="algorithm-btn" data-algorithm="dfs"
+                                        title="Depth-First Search">DFS</button>
+                                <button class="algorithm-btn" data-algorithm="bfs"
+                                        title="Breadth-First Search">BFS</button>
+                                <button class="algorithm-btn" data-algorithm="dijkstra"
+                                        title="Dijkstra's Algorithm">Dijkstra</button>
+                                <button class="algorithm-btn" data-algorithm="astar"
+                                        title="A* Search">A*</button>
+
+                                <button class="algorithm-btn" data-algorithm="greedy"
+                                        title="Greedy Best-First Search">Greedy</button>
+                                <button class="algorithm-btn" data-algorithm="bidirectionalbfs"
+                                        title="Bidirectional BFS">Bi-BFS</button>
+                                <button class="algorithm-btn" data-algorithm="jps"
+                                        title="Jump Point Search">JPS</button>
+                                <button class="algorithm-btn" data-algorithm="bellmanford"
+                                        title="Bellman-Ford">Bellman-Ford</button>
+                                <button class="algorithm-btn" data-algorithm="thetastar"
+                                        title="Theta*">Theta*</button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -78,10 +97,22 @@
                     <div class="terrain-rows">
                         <span id="paint-label" class="toolbar-label">Paint:</span>
                         <div class="terrain-buttons" role="group" aria-labelledby="paint-label">
-                            <button class="terrain-btn selected" data-brush="wall" aria-pressed="true">Wall</button>
-                            <button class="terrain-btn" data-brush="grass" aria-pressed="false">Grass</button>
-                            <button class="terrain-btn" data-brush="mud" aria-pressed="false">Mud</button>
-                            <button class="terrain-btn" data-brush="road" aria-pressed="false">Road</button>
+                            <!-- Becomes a dropdown on small screens, like the algorithms. -->
+                            <div class="dropdown" data-dropdown>
+                                <button type="button" class="dropdown-trigger paint-trigger"
+                                        aria-haspopup="true" aria-expanded="false"
+                                        aria-label="Choose a paint brush">
+                                    <span class="dropdown-trigger-text">Wall</span>
+                                    <span class="dropdown-caret" aria-hidden="true">▾</span>
+                                </button>
+
+                                <div class="dropdown-menu">
+                                    <button class="terrain-btn selected" data-brush="wall" aria-pressed="true">Wall</button>
+                                    <button class="terrain-btn" data-brush="grass" aria-pressed="false">Grass</button>
+                                    <button class="terrain-btn" data-brush="mud" aria-pressed="false">Mud</button>
+                                    <button class="terrain-btn" data-brush="road" aria-pressed="false">Road</button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Both buttons act on the whole map: one builds a new

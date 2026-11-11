@@ -8,6 +8,7 @@ import { setupPlaybackControls } from "./playbackControls.js";
 import { MOVEMENT_MODES } from "./algorithms/helpers.js";
 import { PathOverlay } from "./pathOverlay.js";
 import { algorithmColors } from "./cellStyles.js";
+import { setupDropdown } from "./dropdown.js";
 
 const cellSize = 25;
 
@@ -146,9 +147,13 @@ function markLastRun(name) {
     });
 }
 
+// A window too short (or narrow) for even one row of cells gives a grid
+// with no start or end. Searching it would never finish.
+const gridIsUsable = () => Boolean(grid.start && grid.end);
+
 function runAlgorithm(name) {
     // Don't search a map that is still being generated.
-    if (terrainAnimator.running) return;
+    if (terrainAnimator.running || !gridIsUsable()) return;
 
     if (algorithmRunner(name)) {
         markLastRun(name);
@@ -190,6 +195,8 @@ const runTerrainGenerator = createTerrainRunner(
 );
 
 async function generateMap() {
+    if (!gridIsUsable()) return;
+
     // Cancel any map generation already in progress.
     terrainAnimator.stop();
 
@@ -252,3 +259,6 @@ const observer = new ResizeObserver(() => {
 });
 
 observer.observe(container);
+
+// Algorithm and paint buttons collapse into dropdowns on small screens.
+document.querySelectorAll("[data-dropdown]").forEach(setupDropdown);
