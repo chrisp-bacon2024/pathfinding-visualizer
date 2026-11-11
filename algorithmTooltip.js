@@ -5,6 +5,11 @@
 const SHOW_DELAY_MS = 250;
 const GAP = 8;
 
+// Touch screens have no hover, so a long press shows the tooltip.
+const LONG_PRESS_MS = 450;
+// A finger moving further than this is scrolling, not pressing.
+const LONG_PRESS_MOVE_PX = 10;
+
 // options:
 //   buttons: the algorithm buttons (each has data-algorithm)
 //   info: algorithmInfo (name, description, guarantee per algorithm)
@@ -29,10 +34,22 @@ export function setupAlgorithmTooltip({ buttons, info, colors, getStats, isImple
     let activeButton = null;
     let showTimer = null;
 
-    function show(button, delay) {
+    // Shown by a long press: placed above the finger, and stays up
+    // after the finger lifts until the next tap.
+    let shownByTouch = false;
+
+    // Long-press tracking.
+    let pressTimer = null;
+    let pressStart = null;
+    // The button whose long press just showed the tooltip: the click the
+    // browser sends when the finger lifts must not run the algorithm.
+    let swallowClickOn = null;
+
+    function show(button, delay, { byTouch = false } = {}) {
         clearTimeout(showTimer);
         showTimer = setTimeout(() => {
             activeButton = button;
+            shownByTouch = byTouch;
             render();
             tooltip.hidden = false;
             button.setAttribute("aria-describedby", tooltip.id);
@@ -42,6 +59,7 @@ export function setupAlgorithmTooltip({ buttons, info, colors, getStats, isImple
 
     function hide() {
         clearTimeout(showTimer);
+        shownByTouch = false;
         activeButton?.removeAttribute("aria-describedby");
         activeButton = null;
         tooltip.hidden = true;
@@ -146,7 +164,13 @@ export function setupAlgorithmTooltip({ buttons, info, colors, getStats, isImple
         let left;
         let top;
 
-        if (inMenu) {
+        if (shownByTouch) {
+            // Above the button, clear of the finger and hand; below
+            // only if there's no room above.
+            left = rect.left + (rect.width - width) / 2;
+            top = rect.top - height - GAP;
+            if (top < GAP) top = rect.bottom + GAP;
+        } else if (inMenu) {
             // Beside the open dropdown menu, so it doesn't cover the items.
             const menuRect = inMenu.getBoundingClientRect();
             left = menuRect.right + GAP;
@@ -162,9 +186,51 @@ export function setupAlgorithmTooltip({ buttons, info, colors, getStats, isImple
         tooltip.style.top = `${clamp(top, GAP, innerHeight - height - GAP)}px`;
     }
 
+    function cancelPress() {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+    }
+
     buttons.forEach(button => {
-        button.addEventListener("mouseenter", () => show(button, SHOW_DELAY_MS));
-        button.addEventListener("mouseleave", hide);
+        // Hover, for a real mouse only. (Pointer events, because phones
+        // also fire fake mouse events after a tap.)
+        button.addEventListener("pointerenter", event => {
+            if (event.pointerType === "mouse") show(button, SHOW_DELAY_MS);
+        });
+        button.addEventListener("pointerleave", event => {
+            if (event.pointerType === "mouse") hide();
+            else cancelPress();
+        });
+
+        // Long press on touch screens.
+        button.addEventListener("pointerdown", event => {
+            if (event.pointerType === "mouse") return;
+
+            pressStart = { x: event.clientX, y: event.clientY };
+            cancelPress();
+
+            pressTimer = setTimeout(() => {
+                pressTimer = null;
+                swallowClickOn = button;
+                show(button, 0, { byTouch: true });
+                navigator.vibrate?.(10);
+            }, LONG_PRESS_MS);
+        });
+
+        button.addEventListener("pointermove", event => {
+            if (!pressTimer || !pressStart) return;
+
+            const moved = Math.hypot(event.clientX - pressStart.x, event.clientY - pressStart.y);
+            if (moved > LONG_PRESS_MOVE_PX) cancelPress();
+        });
+
+        button.addEventListener("pointerup", cancelPress);
+        button.addEventListener("pointercancel", cancelPress);
+
+        // Holding a finger down can open the browser's own menu.
+        button.addEventListener("contextmenu", event => {
+            if (pressTimer || swallowClickOn === button) event.preventDefault();
+        });
 
         // Keyboard users get it on focus; mouse clicks don't re-open it.
         button.addEventListener("focus", () => {
@@ -176,9 +242,29 @@ export function setupAlgorithmTooltip({ buttons, info, colors, getStats, isImple
         button.addEventListener("click", hide);
     });
 
+    // Swallow the click that follows a long press. Runs in the capture
+    // phase on the document, before any button or dropdown handler.
+    document.addEventListener("click", event => {
+        if (swallowClickOn && swallowClickOn.contains(event.target)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+        swallowClickOn = null;
+    }, true);
+
+    // A tooltip opened by a long press closes on the next tap anywhere
+    // (a new long press re-opens it). A new tap or key press also ends
+    // any pending click-swallowing, in case the browser never sent the
+    // click after the long press.
+    document.addEventListener("pointerdown", () => {
+        swallowClickOn = null;
+        if (shownByTouch) hide();
+    }, true);
+
     document.addEventListener("keydown", event => {
+        swallowClickOn = null;
         if (event.key === "Escape") hide();
-    });
+    }, true);
     addEventListener("scroll", hide, true);
     addEventListener("resize", hide);
 

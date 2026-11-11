@@ -512,6 +512,14 @@ body {
 
 /* Algorithm tooltip (algorithmTooltip.js) */
 
+/* Long-pressing a button shows its tooltip; stop phones from selecting
+   the label or opening their own long-press menu instead. */
+.algorithm-btn {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 .algorithm-tooltip {
     position: fixed;
     z-index: 30;
