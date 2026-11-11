@@ -30,7 +30,16 @@ export const cellStyles = {
 
     searchStates: {
         idle: {},
-    
+
+        // Cells examined while scanning for jump points (JPS) but
+        // never added to the priority queue.
+        scanned: {
+            fill: "#8B7BC8",
+            opacity: 0.22,
+            border: "#8B7BC8",
+            borderWidth: 0.75
+        },
+
         frontier: {
             fill: "#3B82F6",
             opacity: 0.25,
@@ -81,6 +90,7 @@ export const hoverInteractions = {
     wall: "hoverWall",
     start: "hoverDraggable",
     end: "hoverDraggable",
+    scanned: "idle",
     frontier: "idle",
     visited: "idle",
     path: "idle"

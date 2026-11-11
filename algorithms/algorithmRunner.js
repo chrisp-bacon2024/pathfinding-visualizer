@@ -4,6 +4,7 @@ import { dijkstra } from "./dijkstra.js";
 import { aStar } from "./aStar.js"
 import { greedyBestFirstSearch } from "./greedyBestFirstSearch.js";
 import { biBFS } from "./biBFS.js";
+import { jps } from "./jps.js";
 
 const algorithms = {
     dfs,
@@ -11,7 +12,8 @@ const algorithms = {
     dijkstra,
     astar: aStar,
     greedy: greedyBestFirstSearch,
-    bidirectionalbfs: biBFS
+    bidirectionalbfs: biBFS,
+    jps
 };
 
 export function createAlgorithmRunner(getGrid, animator, ctx, getMovementMode = () => "4"){
