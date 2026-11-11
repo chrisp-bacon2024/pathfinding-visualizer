@@ -62,6 +62,9 @@ body {
 
 #gridCanvas {
     display: block;
+    /* Dragging a finger on the grid paints instead of scrolling or
+       zooming the page. */
+    touch-action: none;
 }
 
 .canvas-stack {
@@ -452,15 +455,27 @@ body {
         padding-top: 10px;
     }
 
-    /* Algorithm dropdown and Directions share one row. */
+    /* Algorithms and Terrain share the same two columns, so Directions
+       lines up with the Paint/Map labels and the algorithm dropdown
+       starts where the paint dropdown and Map buttons do. The first
+       column fits the Directions toggle. */
+    .toolbar {
+        --stack-label-column: 76px;
+    }
+
     .algorithm-buttons {
         width: 100%;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: var(--stack-label-column) 1fr;
+    }
+
+    /* Directions first (as in the markup), then the dropdown. */
+    .algorithm-buttons .dropdown {
+        order: 0;
     }
 
     .terrain-rows {
         width: 100%;
-        grid-template-columns: auto 1fr;
+        grid-template-columns: var(--stack-label-column) 1fr;
     }
 
     /* Generate Map and Clear Paths split the row evenly. */

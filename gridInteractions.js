@@ -47,9 +47,18 @@ export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator
     })
 
     
+    // Pointer events cover mouse, touch and pen. Only one pointer paints
+    // at a time; a second finger is ignored.
+    let activePointerId = null;
+
     // Start painting or dragging.
-    canvas.addEventListener("mousedown", event => {
-        if (event.button !== 0 || isAnimating()) return;
+    canvas.addEventListener("pointerdown", event => {
+        if (!event.isPrimary || event.button !== 0 || isAnimating()) return;
+
+        // Keep receiving this pointer's moves until it's released, even
+        // if a finger slides off the canvas.
+        activePointerId = event.pointerId;
+        canvas.setPointerCapture(event.pointerId);
 
         // Editing the grid discards any loaded playback (paused or
         // finished) and kept paths, since they no longer match the grid.
@@ -77,16 +86,22 @@ export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator
             grid.paintLine(cell, cell, grid.activePaintType, ctx);
         }
 
-        cell.draw(ctx, hoverInteractions[cell.type] ?? "idle");
+        // Touch has no hover, so only a mouse gets hover styling.
+        const isMouse = event.pointerType === "mouse";
+        cell.draw(ctx, isMouse ? hoverInteractions[cell.type] ?? "idle" : "idle");
     });
 
-    // Continue painting or dragging while moving the mouse.
-    canvas.addEventListener("mousemove", event => {
+    // Continue painting or dragging while moving the pointer.
+    canvas.addEventListener("pointermove", event => {
+        // Ignore a second finger, and other pointers mid-drag.
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+
         const grid = getGrid();
         const cell = grid.getCellAt(event.offsetX, event.offsetY);
+        const isMouse = event.pointerType === "mouse";
 
         // Remove hover styling from the previous cell.
-        if (cell !== grid.hoveredCell) {
+        if (isMouse && cell !== grid.hoveredCell) {
             if (grid.hoveredCell) {
                 grid.hoveredCell.draw(ctx, "idle");
             }
@@ -119,13 +134,13 @@ export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator
         }
 
         // Apply hover styling.
-        if (cell) {
+        if (isMouse && cell) {
             cell.draw(ctx, hoverInteractions[cell.type] ?? "idle");
         }
     });
 
     // Remove hover styling when leaving the canvas.
-    canvas.addEventListener("mouseleave", () => {
+    canvas.addEventListener("pointerleave", () => {
         const grid = getGrid();
 
         if (grid.hoveredCell) {
@@ -141,9 +156,12 @@ export function setupGridInteractions(canvas, getGrid, animator, terrainAnimator
         grid.interactionMode = "idle";
         grid.activePaintType = null;
         grid.lastDrawnCell = null;
+        activePointerId = null;
     };
 
-    window.addEventListener("mouseup", resetInteraction);
+    window.addEventListener("pointerup", resetInteraction);
+    // E.g. the browser takes over the touch, or a call comes in.
+    window.addEventListener("pointercancel", resetInteraction);
 
     // Cancel interactions if the browser loses focus.
     window.addEventListener("blur", resetInteraction);
