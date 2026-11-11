@@ -111,45 +111,70 @@ Scan in direction (dr, dc) until the destination is reached,
 a jump point is discovered, or an invalid move is encountered.
 */
 
-const jump = (grid, cell, dr, dc, end, steps, visualize = true) => {
 
-    // Stop if the next movement is illegal.
+const jump = (
+    grid, cell, dr, dc, end, steps,
+    visualize = true,
+    mode = MOVEMENT_MODES.EIGHT
+) => {
     if (!canMove(grid, cell, dr, dc)) return null;
 
-    // Advance one cell in the current direction.
     const newRow = cell.row + dr;
     const newCol = cell.col + dc;
     const newCell = grid.rows[newRow][newCol];
 
-    // Reaching the destination is a successful jump.
     if (newCell === end) return newCell;
 
-    // Visualize primary scans, but not exploratory lookahead scans.
     if (visualize) {
         steps.push({cell: newCell, state: "scanned"});
     }
 
-    // Stop when an obstacle creates a candidate jump point.
+    if (mode === MOVEMENT_MODES.FOUR) {
+        // Preserve every possible 90-degree turn.
+        // This is conservative rather than traditional JPS.
+        const perpendicularDirections = dr !== 0
+            ? [[0, -1], [0, 1]]
+            : [[-1, 0], [1, 0]];
+
+        const canTurn = perpendicularDirections.some(
+            ([r, c]) => canMove(grid, newCell, r, c)
+        );
+
+        if (canTurn) return newCell;
+
+        return jump(
+            grid, newCell, dr, dc, end,
+            steps, visualize, mode
+        );
+    }
+
+    // Existing 8-way jump logic.
     if (hasForcedNeighbor(grid, newCell, dr, dc)) {
         return newCell;
     }
 
     if (dr !== 0 && dc !== 0) {
-        // Horizontal and vertical lookahead checks.
-        // These still execute, but don't generate visualization steps.
-
-        if (jump(grid, newCell, 0, dc, end, steps, false) !== null) {
+        if (jump(
+            grid, newCell, 0, dc, end,
+            steps, false, mode
+        ) !== null) {
             return newCell;
         }
 
-        if (jump(grid, newCell, dr, 0, end, steps, false) !== null) {
+        if (jump(
+            grid, newCell, dr, 0, end,
+            steps, false, mode
+        ) !== null) {
             return newCell;
         }
     }
 
-    // Continue in the same direction, preserving visualization mode.
-    return jump(grid, newCell, dr, dc, end, steps, visualize);
+    return jump(
+        grid, newCell, dr, dc, end,
+        steps, visualize, mode
+    );
 };
+
 
 
 
@@ -174,7 +199,9 @@ const getPrunedDirections = (grid, cell, parent, mode) => {
         ]
     );
 
-    if (!parent) return directions;
+    if (!parent || mode === MOVEMENT_MODES.FOUR) {
+        return directions;
+    };
 
     // Direction from parent to current jump point.
     const dr = Math.sign(cell.row - parent.row);
@@ -246,12 +273,8 @@ export const jps = (grid, start, end, mode = MOVEMENT_MODES.FOUR) => {
         for (const [dr, dc] of directions) {
 
             // Search in this direction until a jump point is found.
-            const jumpPoint = jump(grid, current, dr, dc, end, steps);
-            console.log(
-                "Jump:",
-                [dr, dc],
-                "→",
-                jumpPoint ? [jumpPoint.row, jumpPoint.col] : null
+            const jumpPoint = jump(
+                grid, current, dr, dc, end, steps, true, mode
             );
 
 
@@ -277,11 +300,6 @@ export const jps = (grid, start, end, mode = MOVEMENT_MODES.FOUR) => {
             }
         }
     }
-    console.log({
-    endFound,
-    finalizedCount: finalized.size,
-    discoveredCount: distances.size
-});
     if (endFound){
         reconstructJPSPath(grid, cameFrom, start, end, steps);
     };
