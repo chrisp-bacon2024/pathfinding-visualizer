@@ -101,6 +101,12 @@ export class Grid {
     getCellsAlongLine(from, to) {
         const cells = [];
 
+        // Invalid endpoints give no cells (lineOfSight treats that as
+        // blocked). Without this, an out-of-range row is indexed before any
+        // check can run, and a non-integer or NaN target is never reached
+        // exactly, so the walk below would run off the grid.
+        if (!this.isInBounds(from) || !this.isInBounds(to)) return cells;
+
         const dX = to.col - from.col;
         const dY = to.row - from.row;
 
@@ -145,7 +151,14 @@ export class Grid {
         return cells;
     }
 
-    
+    // True if {row, col} are integers inside the grid. Reading the
+    // coordinates of null or undefined throws a TypeError, as before.
+    isInBounds({ row, col }) {
+        return Number.isInteger(row) && Number.isInteger(col) &&
+            row >= 0 && row < this.nRows &&
+            col >= 0 && col < this.nCols;
+    }
+
     lineOfSight(from, to) {
         const cells = this.getCellsAlongLine(from, to);
 
