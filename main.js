@@ -42,7 +42,7 @@ const algorithmTooltip = setupAlgorithmTooltip({
 });
 
 // Algorithm paths, drawn as coloured lines above the grid. Paths from
-// earlier runs stay until the grid changes or Clear Paths is pressed.
+// earlier runs stay until the grid changes or the map is cleared.
 const pathOverlay = new PathOverlay(document.getElementById("pathCanvas"), {
     cellSize,
     order: [...algorithmButtons].map(button => button.dataset.algorithm),
@@ -89,11 +89,14 @@ const terrainAnimator = new Animator(ctx);
 
 // Removes every kept path, the current playback and its search
 // colours. Used whenever the grid changes, since paths found on the old
-// grid no longer apply, and by the Clear Paths button.
+// grid no longer apply, and by the Clear button.
 function clearComparison() {
     animator.clear();
     pathOverlay.clear();
     grid.clearVisualization(ctx);
+
+    // No run is loaded any more, so no algorithm is the blue one.
+    markLastRun(null);
 }
 
 setupGridInteractions(canvas, () => grid, animator, terrainAnimator, ctx, clearComparison);
@@ -302,8 +305,17 @@ async function generateMap() {
 document.querySelector("#generate-map-btn")
     .addEventListener("click", generateMap);
 
-document.querySelector("#clear-paths-btn")
-    .addEventListener("click", clearComparison);
+// Wipes the whole map back to grass: terrain, walls, paths and search
+// colours. The start and end stay where they are.
+function clearMap() {
+    // Cancel any map generation in progress.
+    terrainAnimator.stop();
+    clearComparison();
+    grid.resetTerrain("grass", ctx);
+}
+
+document.querySelector("#clear-btn")
+    .addEventListener("click", clearMap);
 
 const algorithmShortcuts = {
     d: "dfs",
@@ -332,6 +344,7 @@ const observer = new ResizeObserver(() => {
     // The loaded steps and kept paths point at the old grid's cells.
     animator.clear();
     pathOverlay.clear();
+    markLastRun(null);
     terrainAnimator.stop();
     grid = createGrid();
 });

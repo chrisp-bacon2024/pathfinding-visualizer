@@ -110,16 +110,17 @@
                         </div>
 
                         <!-- Both buttons act on the whole map: one builds a new
-                             one, the other wipes the paths drawn on it. -->
+                             one, the other wipes it back to plain grass. -->
                         <span id="map-label" class="toolbar-label">Map:</span>
                         <div class="terrain-buttons" role="group" aria-labelledby="map-label">
-                            <button id="generate-map-btn" class="generate-btn">
-                                Generate Map
+                            <button id="generate-map-btn" class="generate-btn"
+                                    title="Generate a new random map">
+                                Generate
                             </button>
 
-                            <button id="clear-paths-btn" class="clear-paths-btn"
-                                    title="Clear all algorithm paths and search colours">
-                                Clear Paths
+                            <button id="clear-btn" class="clear-btn"
+                                    title="Clear the map: all terrain, walls, paths and search colours">
+                                Clear
                             </button>
                         </div>
                     </div>
