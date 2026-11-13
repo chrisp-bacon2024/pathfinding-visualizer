@@ -5,6 +5,7 @@ import { aStar } from "./aStar.js"
 import { greedyBestFirstSearch } from "./greedyBestFirstSearch.js";
 import { biBFS } from "./biBFS.js";
 import { jps } from "./jps.js";
+import { bellmanFord } from "./bellmanFord.js";
 
 const algorithms = {
     dfs,
@@ -13,7 +14,8 @@ const algorithms = {
     astar: aStar,
     greedy: greedyBestFirstSearch,
     bidirectionalbfs: biBFS,
-    jps
+    jps,
+    bellmanford: bellmanFord
 };
 
 // How long to spend re-running a search to time it (see below).

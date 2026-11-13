@@ -11,6 +11,7 @@ import { dijkstra } from "../algorithms/dijkstra.js";
 import { aStar } from "../algorithms/aStar.js";
 import { greedyBestFirstSearch } from "../algorithms/greedyBestFirstSearch.js";
 import { biBFS } from "../algorithms/biBFS.js";
+import { bellmanFord } from "../algorithms/bellmanFord.js";
 
 // Same names as the data-algorithm attributes in index.html.
 export const ALGORITHMS = {
@@ -19,7 +20,8 @@ export const ALGORITHMS = {
     dijkstra,
     astar: aStar,
     greedy: greedyBestFirstSearch,
-    bidirectionalbfs: biBFS
+    bidirectionalbfs: biBFS,
+    bellmanford: bellmanFord
 };
 
 const SYMBOLS = {

@@ -100,13 +100,13 @@ test("every algorithm returns a legal, connected path whenever one exists, in bo
     }
 });
 
-test("Dijkstra and A* return the same optimal cost in both modes", () => {
+test("Dijkstra, A* and Bellman-Ford return the same optimal cost in both modes", () => {
     for (const [gridName, lines] of allGrids) {
         for (const mode of MODES) {
             const optimal = referenceOptimalCost(buildGrid(lines), mode);
             if (optimal === Infinity) continue;
 
-            for (const name of ["dijkstra", "astar"]) {
+            for (const name of ["dijkstra", "astar", "bellmanford"]) {
                 const { grid, steps } = run(name, lines, mode);
                 const { cost } = checkChain(grid, pathChain(grid, steps), mode);
 
