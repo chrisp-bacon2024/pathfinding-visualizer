@@ -37,7 +37,8 @@ const algorithmTooltip = setupAlgorithmTooltip({
     info: algorithmInfo,
     colors: algorithmColors,
     getStats: () => runStats,
-    isImplemented: hasAlgorithm
+    isImplemented: hasAlgorithm,
+    getUnavailableReason: name => unavailableReason(name)
 });
 
 // Algorithm paths, drawn as coloured lines above the grid. Paths from
@@ -101,6 +102,28 @@ animator.subscribeProgress(current => pathOverlay.setProgress(current));
 // "4" (orthogonal) or "8" (orthogonal + diagonal). Defaults to 4-way.
 let movementMode = MOVEMENT_MODES.FOUR;
 
+// Why an algorithm can't run in the current mode, or null if it can.
+function unavailableReason(name) {
+    if (algorithmInfo[name]?.eightWayOnly && movementMode !== MOVEMENT_MODES.EIGHT) {
+        return "Only works with 8-way directions. Switch Directions to 8-way to use it.";
+    }
+    return null;
+}
+
+// Greys out algorithms that can't run in the current mode. They aren't
+// `disabled`, because disabled buttons get no hover or long press, so
+// the tooltip couldn't explain why.
+function updateAlgorithmAvailability() {
+    algorithmButtons.forEach(button => {
+        const unavailable = unavailableReason(button.dataset.algorithm) !== null;
+        button.classList.toggle("unavailable", unavailable);
+        button.setAttribute("aria-disabled", String(unavailable));
+    });
+    algorithmTooltip.refresh();
+}
+
+updateAlgorithmAvailability();
+
 const algorithmRunner = createAlgorithmRunner(
     () => grid,
     animator,
@@ -153,6 +176,8 @@ function setMovementMode(mode) {
         icon.toggleAttribute("hidden", icon.dataset.mode !== mode);
     });
 
+    updateAlgorithmAvailability();
+
     // Paths found in the other mode no longer apply. Clears them, the
     // playback and its colours, leaving terrain, walls, start and end.
     clearComparison();
@@ -183,6 +208,7 @@ const gridIsUsable = () => Boolean(grid.start && grid.end);
 function runAlgorithm(name) {
     // Don't search a map that is still being generated.
     if (terrainAnimator.running || !gridIsUsable()) return;
+    if (unavailableReason(name)) return;
 
     if (algorithmRunner(name)) {
         markLastRun(name);

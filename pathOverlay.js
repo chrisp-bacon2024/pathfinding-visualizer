@@ -86,8 +86,8 @@ export class PathOverlay {
     startRun(name, steps, start, end) {
         // Keep the previous run's whole path, even if it was paused part-way.
         if (this.current) {
-            const { name: previous, cells, start: s, end: e } = this.current;
-            this.kept.set(previous, { cells, start: s, end: e });
+            const { name: previous, cells, start: s, end: e, anyAngle } = this.current;
+            this.kept.set(previous, { cells, start: s, end: e, anyAngle });
         }
 
         // Re-running an algorithm replaces its old path.
@@ -95,15 +95,20 @@ export class PathOverlay {
 
         const pathStepIndices = [];
         const cells = [];
+        const pathSteps = [];
 
         steps.forEach((step, index) => {
             if (step.state === "path") {
                 pathStepIndices.push(index);
                 cells.push(step.cell);
+                pathSteps.push(step);
             }
         });
 
-        this.current = { name, start, end, cells, pathStepIndices };
+        this.current = {
+            name, start, end, cells, pathStepIndices,
+            anyAngle: anyAngleRoute(pathSteps, start, end)
+        };
         this.currentStep = 0;
 
         this.changed();
@@ -142,7 +147,7 @@ export class PathOverlay {
 
         for (const name of this.names()) {
             const isCurrent = this.current?.name === name;
-            const { start, end, cells: pathCells } = isCurrent
+            const { start, end, cells: pathCells, anyAngle } = isCurrent
                 ? this.current
                 : this.kept.get(name);
 
@@ -156,6 +161,11 @@ export class PathOverlay {
 
             // Nothing of the current path is shown yet.
             if (shown === 0) continue;
+
+            if (anyAngle) {
+                paths.push({ name, cells: anyAngle.pointsUpTo(shown) });
+                continue;
+            }
 
             const cells = [start, ...pathCells.slice(0, shown)];
             if (shown === pathCells.length) cells.push(end);
@@ -214,6 +224,41 @@ export class PathOverlay {
 
         ctx.restore();
     }
+}
+
+// Any-angle paths (Theta*): each path step names the segment it lies on
+// (`from` -> `to` waypoints) and how far along it it is (`t`). The line
+// is drawn straight between waypoint centres rather than through every
+// touched cell, and grows along the current segment during playback.
+// Returns null for ordinary paths (no segment info on their steps).
+function anyAngleRoute(pathSteps, start, end) {
+    if (pathSteps.length === 0 || !pathSteps.every(step => step.to)) return null;
+
+    const waypoints = [start];
+    const positions = pathSteps.map(step => {
+        if (step.to !== waypoints.at(-1)) waypoints.push(step.to);
+        return { segment: waypoints.length - 2, t: step.t ?? 1 };
+    });
+    if (waypoints.at(-1) !== end) waypoints.push(end);
+
+    return {
+        waypoints,
+
+        // Line points (in cell coordinates) once `shown` path steps
+        // have been applied.
+        pointsUpTo(shown) {
+            if (shown >= positions.length) return waypoints;
+
+            const { segment, t } = positions[shown - 1];
+            const a = waypoints[segment];
+            const b = waypoints[segment + 1];
+
+            return [
+                ...waypoints.slice(0, segment + 1),
+                { row: a.row + (b.row - a.row) * t, col: a.col + (b.col - a.col) * t }
+            ];
+        }
+    };
 }
 
 function strokePolyline(ctx, points) {

@@ -26,7 +26,7 @@ export function computeRunStats({ grid, steps, mode, elapsedMs }) {
     const stats = { found, cost: null, moves: null, explored, timeMs: elapsedMs };
     if (!found) return stats;
 
-    const chain = [grid.start, ...pathCells, grid.end];
+    const chain = [grid.start, ...routePoints(steps), grid.end];
     let cost = 0;
     let moves = 0;
 
@@ -37,6 +37,25 @@ export function computeRunStats({ grid, steps, mode, elapsedMs }) {
     }
 
     return { ...stats, cost, moves };
+}
+
+// The points the path goes through, between start and end. Usually every
+// path cell. Any-angle paths (Theta*) also mark the cells their straight
+// segments touch, but each such step names its segment's end waypoint
+// (`to`), so the path is just those waypoints.
+function routePoints(steps) {
+    const pathSteps = steps.filter(step => step.state === "path");
+
+    if (pathSteps.length === 0 || !pathSteps.every(step => step.to)) {
+        return pathSteps.map(step => step.cell);
+    }
+
+    const waypoints = [];
+    for (const { to } of pathSteps) {
+        if (to !== waypoints.at(-1)) waypoints.push(to);
+    }
+    // The last waypoint is the end, which the chain already adds.
+    return waypoints.slice(0, -1);
 }
 
 // Cost and moves from one path point to the next. Usually neighbours,

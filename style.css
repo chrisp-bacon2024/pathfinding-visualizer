@@ -183,6 +183,17 @@ body {
     background: #345d7b;
 }
 
+/* Can't run in the current direction mode (e.g. Theta* in 4-way). Looks
+   disabled, but still gets hover and long press so the tooltip can say why. */
+.toolbar .algorithm-btn.unavailable,
+.toolbar .algorithm-btn.unavailable:hover:not(:disabled) {
+    background: #fff;
+    border-color: #cbd5e1;
+    color: #334155;
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* Sliver in the algorithm's path colour (set as --path-color in main.js),
    shown while its path is part of the comparison. */
 .toolbar .algorithm-btn.has-path {
@@ -601,6 +612,15 @@ body {
     margin: 6px 0 0;
     color: #64748b;
     font-style: italic;
+}
+
+.tooltip-warning {
+    margin: 6px 0 0;
+    padding: 4px 6px;
+    border-left: 3px solid #f59e0b;
+    background: #fffbeb;
+    color: #92400e;
+    font-weight: 600;
 }
 
 .tooltip-table {

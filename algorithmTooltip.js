@@ -16,8 +16,11 @@ const LONG_PRESS_MOVE_PX = 10;
 //   colors: path colour per algorithm
 //   getStats: () => Map(name -> stats from computeRunStats), in run order
 //   isImplemented: name => boolean
-// Returns { refresh } to call when the stats change.
-export function setupAlgorithmTooltip({ buttons, info, colors, getStats, isImplemented }) {
+//   getUnavailableReason: name => why it can't run right now, or null
+// Returns { refresh } to call when the stats or availability change.
+export function setupAlgorithmTooltip({
+    buttons, info, colors, getStats, isImplemented, getUnavailableReason = () => null
+}) {
     const tooltip = document.createElement("div");
     tooltip.id = "algorithm-tooltip";
     tooltip.className = "algorithm-tooltip";
@@ -83,14 +86,18 @@ export function setupAlgorithmTooltip({ buttons, info, colors, getStats, isImple
 
         if (description) tooltip.append(el("p", "tooltip-description", description));
 
+        const unavailable = getUnavailableReason(name);
+
         if (!isImplemented(name)) {
             tooltip.append(el("p", "tooltip-note", "Not implemented yet."));
+        } else if (unavailable) {
+            tooltip.append(el("p", "tooltip-warning", unavailable));
         }
 
         const stats = getStats();
         if (stats.size === 0) return;
 
-        if (!stats.has(name) && isImplemented(name)) {
+        if (!stats.has(name) && isImplemented(name) && !unavailable) {
             tooltip.append(el("p", "tooltip-note", "Run it to add it to the comparison."));
         }
 

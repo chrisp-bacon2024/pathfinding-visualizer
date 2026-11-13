@@ -57,6 +57,8 @@ export const algorithmInfo = {
         name: "Theta*",
         description: "A* that cuts corners with straight lines of sight, " +
             "giving smooth any-angle paths instead of grid steps.",
-        guarantee: { kind: "none", label: "Short any-angle paths" }
+        guarantee: { kind: "none", label: "Short any-angle paths" },
+        // Any-angle lines need diagonal movement: unavailable in 4-way.
+        eightWayOnly: true
     }
 };

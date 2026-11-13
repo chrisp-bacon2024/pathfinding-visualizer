@@ -98,6 +98,72 @@ export class Grid {
         return this.rows[row][col];
     }
 
+    getCellsAlongLine(from, to) {
+        const cells = [];
+
+        const dX = to.col - from.col;
+        const dY = to.row - from.row;
+
+        const stepX = Math.sign(dX);
+        const stepY = Math.sign(dY);
+
+        const absDX = Math.abs(dX);
+        const absDY = Math.abs(dY);
+
+        let crossedX = 0;
+        let crossedY = 0;
+
+        let row = from.row;
+        let col = from.col;
+
+        cells.push(this.rows[row][col])
+
+        while (row !== to.row || col !== to.col){
+            const nextX = (2 * crossedX + 1) * absDY;
+            const nextY = (2 * crossedY + 1) * absDX;
+
+            if (nextX < nextY) {
+                col += stepX;
+                crossedX++;
+            } else if (nextY < nextX) {
+                row += stepY;
+                crossedY++;
+            } else {
+                // The line touches a grid corner.
+                // Include both adjacent side cells.
+                cells.push(this.rows[row][col + stepX]);
+                cells.push(this.rows[row + stepY][col]);
+
+                row += stepY;
+                col += stepX;
+
+                crossedX++;
+                crossedY++;
+            }
+            cells.push(this.rows[row][col]);
+        }
+        return cells;
+    }
+
+    
+    lineOfSight(from, to) {
+        const cells = this.getCellsAlongLine(from, to);
+
+        // Reject invalid endpoints.
+        if (cells.length === 0) return false;
+
+        // Check every cell touched by the line, including
+        // adjacent cells at corners to prevent corner cutting.
+        for (const cell of cells) {
+            if (!cell || cell.type === "wall") {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
     paintLine(startCell, endCell, type, ctx) {
         if (!startCell || !endCell) return;
         if (!paintableTypes.has(type)) return;
