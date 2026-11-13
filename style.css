@@ -14,6 +14,11 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    /* Visible viewport height (dvh excludes mobile browser toolbars), minus
+       the portfolio bar when hosted on christophermpalmer.com. Standalone,
+       --pf-bar-height is unset, so nothing is subtracted. Browsers without
+       dvh support keep the 100vh line above. */
+    height: calc(100dvh - var(--pf-bar-height, 0px));
     padding: 20px;
     gap: 15px;
 }
