@@ -36,21 +36,26 @@ export function setupPlaybackControls(animator) {
     // so sync the animator with whatever the dropdown shows.
     applySpeed();
 
-    const render = state => {
-        const isPlaying = state === "playing";
+    const render = () => {
+        const isPlaying = animator.state === "playing";
 
         playPauseButton.textContent = isPlaying ? "❚❚" : "▶";
-        playPauseButton.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
+        playPauseButton.setAttribute("aria-label",
+            isPlaying ? "Pause" : animator.finished ? "Replay" : "Play");
         playPauseButton.setAttribute("aria-pressed", String(isPlaying));
 
-        // Nothing to play or pause when no playback is loaded.
-        playPauseButton.disabled = state === "idle";
+        // Nothing to play when no playback is loaded. A finished
+        // playback can be played again from the start.
+        playPauseButton.disabled = animator.state === "idle" && !animator.finished;
     };
 
     playPauseButton.addEventListener("click", () => {
-        animator.togglePause();
+        if (animator.finished) animator.restart();
+        else animator.togglePause();
     });
 
     animator.subscribe(render);
-    render(animator.state);
+    // Loading, clearing and finishing change what the button can do.
+    animator.subscribeProgress(render);
+    render();
 }

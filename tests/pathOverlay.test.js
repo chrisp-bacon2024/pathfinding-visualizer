@@ -226,3 +226,79 @@ test("all algorithms, in both modes, draw a line through their real path", () =>
         assert.deepEqual(drawn, expected, `${mode}-way`);
     }
 });
+
+test("hiding a path keeps it in the comparison but stops drawing it", () => {
+    const grid = buildGrid(["S....E"]);
+    const { overlay, ctx, changes } = makeOverlay();
+    const straight = [[0, 1], [0, 2], [0, 3], [0, 4]];
+
+    for (const name of ["bfs", "astar"]) {
+        const steps = stepsFor(grid, straight);
+        overlay.startRun(name, steps, grid.start, grid.end);
+        overlay.setProgress(steps.length);
+    }
+
+    // Hide A* (the current run): BFS alone, back in the centre lane.
+    assert.equal(overlay.toggleHidden("astar"), false);
+    assert.ok(overlay.isHidden("astar"));
+    assert.deepEqual(changes.at(-1), ["bfs", "astar"], "still in the comparison");
+    let lines = colouredLines(ctx);
+    assert.deepEqual(lines.map(l => l.color), [algorithmColors.bfs]);
+    assert.ok(near(lines[0].points[0].y, CELL / 2));
+
+    // Hide a kept path too, then show both again.
+    overlay.toggleHidden("bfs");
+    assert.deepEqual(colouredLines(ctx), []);
+    overlay.toggleHidden("bfs");
+    overlay.toggleHidden("astar");
+    assert.equal(colouredLines(ctx).length, 2);
+
+    // Re-running shows a hidden path again; clear() forgets hidden state.
+    overlay.toggleHidden("bfs");
+    overlay.startRun("bfs", stepsFor(grid, straight), grid.start, grid.end);
+    assert.equal(overlay.isHidden("bfs"), false);
+    overlay.toggleHidden("astar");
+    overlay.clear();
+    assert.equal(overlay.isHidden("astar"), false);
+
+    // Not in the comparison: nothing to toggle.
+    assert.equal(overlay.toggleHidden("dfs"), false);
+    assert.equal(overlay.isHidden("dfs"), false);
+});
+
+test("select() brings back an earlier run, finished, without re-running it", () => {
+    const grid = buildGrid(["S...", "....", "...E"]);
+    const { overlay, ctx, changes } = makeOverlay();
+    const astarSteps = stepsFor(grid, [[0, 1], [0, 2], [0, 3], [1, 3]]);
+    const bfsSteps = stepsFor(grid, [[1, 0], [2, 0], [2, 1], [2, 2]]);
+
+    overlay.startRun("astar", astarSteps, grid.start, grid.end);
+    overlay.setProgress(astarSteps.length);
+    overlay.startRun("bfs", bfsSteps, grid.start, grid.end);
+    overlay.setProgress(2);  // BFS paused before its path
+
+    // Back to A*: its own steps come back, and it's current and complete.
+    assert.equal(overlay.select("astar"), astarSteps);
+    assert.equal(overlay.current.name, "astar");
+    assert.equal(overlay.currentStep, astarSteps.length);
+    assert.deepEqual(changes.at(-1), ["bfs", "astar"]);
+
+    // Both paths drawn in full: BFS was kept whole when A* took over.
+    let lines = colouredLines(ctx);
+    assert.deepEqual(lines.map(l => l.color).sort(), [algorithmColors.astar, algorithmColors.bfs].sort());
+    assert.equal(lines.find(l => l.color === algorithmColors.bfs).points.length, 6);
+
+    // Scrubbing A*'s playback shrinks only A*'s line.
+    overlay.setProgress(3);
+    lines = colouredLines(ctx);
+    assert.equal(lines.find(l => l.color === algorithmColors.astar).points.length, 2);
+    assert.equal(lines.find(l => l.color === algorithmColors.bfs).points.length, 6);
+
+    // Selecting the current run again resets it to finished.
+    assert.equal(overlay.select("astar"), astarSteps);
+    assert.equal(overlay.currentStep, astarSteps.length);
+
+    // Not in the comparison.
+    assert.equal(overlay.select("dfs"), null);
+    assert.equal(overlay.current.name, "astar");
+});

@@ -72,6 +72,25 @@ export class PathOverlay {
         // { name, start, end, cells, pathStepIndices }.
         this.current = null;
         this.currentStep = 0;
+
+        // Algorithms whose path is still in the comparison but not drawn.
+        this.hidden = new Set();
+    }
+
+    // Shows or hides an algorithm's path without removing it from the
+    // comparison. Returns whether it's now shown.
+    toggleHidden(name) {
+        if (!this.names().includes(name)) return false;
+
+        if (this.hidden.has(name)) this.hidden.delete(name);
+        else this.hidden.add(name);
+
+        this.changed();
+        return !this.hidden.has(name);
+    }
+
+    isHidden(name) {
+        return this.hidden.has(name);
     }
 
     resize(width, height) {
@@ -85,13 +104,11 @@ export class PathOverlay {
     // Call after an algorithm's steps are computed, before playback starts.
     startRun(name, steps, start, end) {
         // Keep the previous run's whole path, even if it was paused part-way.
-        if (this.current) {
-            const { name: previous, cells, start: s, end: e, anyAngle } = this.current;
-            this.kept.set(previous, { cells, start: s, end: e, anyAngle });
-        }
+        if (this.current) this.kept.set(this.current.name, this.current);
 
-        // Re-running an algorithm replaces its old path.
+        // Re-running an algorithm replaces its old path, shown.
         this.kept.delete(name);
+        this.hidden.delete(name);
 
         const pathStepIndices = [];
         const cells = [];
@@ -106,12 +123,31 @@ export class PathOverlay {
         });
 
         this.current = {
-            name, start, end, cells, pathStepIndices,
+            name, steps, start, end, cells, pathStepIndices,
             anyAngle: anyAngleRoute(pathSteps, start, end)
         };
         this.currentStep = 0;
 
         this.changed();
+    }
+
+    // Makes an earlier run the one being played back again, without
+    // re-running it: its whole path is shown as finished. Returns its
+    // steps (to load into the animator), or null if it isn't in the
+    // comparison.
+    select(name) {
+        if (this.current?.name !== name) {
+            const run = this.kept.get(name);
+            if (!run) return null;
+
+            this.kept.delete(name);
+            if (this.current) this.kept.set(this.current.name, this.current);
+            this.current = run;
+        }
+
+        this.currentStep = this.current.steps.length;
+        this.changed();
+        return this.current.steps;
     }
 
     // stepIndex: how many of the current run's steps have been applied.
@@ -124,6 +160,7 @@ export class PathOverlay {
 
     clear() {
         this.kept.clear();
+        this.hidden.clear();
         this.current = null;
         this.currentStep = 0;
 
@@ -146,6 +183,9 @@ export class PathOverlay {
         const paths = [];
 
         for (const name of this.names()) {
+            // Hidden paths take no lane.
+            if (this.hidden.has(name)) continue;
+
             const isCurrent = this.current?.name === name;
             const { start, end, cells: pathCells, anyAngle } = isCurrent
                 ? this.current

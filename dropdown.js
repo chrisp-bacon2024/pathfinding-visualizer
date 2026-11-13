@@ -53,6 +53,7 @@ export function setupDropdown(dropdown) {
 
         const hasPath = current?.classList.contains("has-path") ?? false;
         trigger.classList.toggle("has-path", hasPath);
+        trigger.classList.toggle("path-hidden", hasPath && current.classList.contains("path-hidden"));
         trigger.style.setProperty("--path-color", hasPath
             ? current.style.getPropertyValue("--path-color")
             : "transparent");
@@ -62,7 +63,9 @@ export function setupDropdown(dropdown) {
                 .filter(item => item.classList.contains("has-path"))
                 .map(item => {
                     const dot = document.createElement("span");
-                    dot.className = "dropdown-dot";
+                    dot.className = item.classList.contains("path-hidden")
+                        ? "dropdown-dot path-hidden"
+                        : "dropdown-dot";
                     dot.style.background = item.style.getPropertyValue("--path-color");
                     return dot;
                 }));

@@ -146,3 +146,38 @@ test("terrain edits and map resets remove scanned cells", () => {
     changed.grid.applyTerrainChanges([{ row: 1, col: 1, type: "road" }], ctx);
     assert.equal(changed.grid.rows[1][1].searchState, "idle");
 });
+
+test("a finished playback can be restarted from the beginning", () => {
+    const frames = [];
+    globalThis.requestAnimationFrame = callback => frames.push(callback);
+
+    try {
+        const ctx = fakeContext();
+        const a = new Cell(0, 0, "grass", 20);
+        const b = new Cell(0, 1, "grass", 20);
+        const animator = new Animator(ctx);
+        animator.load([{ cell: a, state: "visited" }, { cell: b, state: "path" }]);
+
+        assert.equal(animator.finished, false, "loaded but not played");
+
+        animator.seek(2);
+        animator.togglePause();             // resume at the end...
+        frames.shift()?.(1000);             // ...which finishes at once
+        assert.equal(animator.finished, true);
+        assert.equal(animator.state, "idle");
+
+        animator.restart();
+        assert.equal(animator.currentStep, 0, "back to the start");
+        assert.equal(a.searchState, "idle", "steps undone");
+        assert.equal(animator.state, "playing");
+        assert.equal(animator.finished, false);
+
+        // Nothing loaded: nothing to restart.
+        animator.clear();
+        animator.restart();
+        assert.equal(animator.state, "idle");
+        assert.equal(animator.finished, false);
+    } finally {
+        delete globalThis.requestAnimationFrame;
+    }
+});

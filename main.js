@@ -49,7 +49,10 @@ const pathOverlay = new PathOverlay(document.getElementById("pathCanvas"), {
     colors: algorithmColors,
     onChange: names => {
         algorithmButtons.forEach(button => {
-            button.classList.toggle("has-path", names.includes(button.dataset.algorithm));
+            const name = button.dataset.algorithm;
+            const inComparison = names.includes(name);
+            button.classList.toggle("has-path", inComparison);
+            button.classList.toggle("path-hidden", inComparison && pathOverlay.isHidden(name));
         });
 
         // Stats follow the comparison: cleared together with the paths.
@@ -238,9 +241,29 @@ function animateTerrain(changes, duration = 2000) {
     });
 }
 
+// Pressing an algorithm that hasn't run yet runs it and plays it.
+// Pressing one whose path is already in the comparison shows or hides
+// its path, and makes it the blue one with its playback loaded (slider
+// at the end) but not playing: press play or drag the slider to watch it.
+function pressAlgorithm(name) {
+    if (!pathOverlay.names().includes(name)) {
+        runAlgorithm(name);
+        return;
+    }
+
+    // Swap the grid's search colours over to this algorithm's run.
+    const steps = pathOverlay.select(name);
+    grid.clearVisualization(ctx);
+    animator.load(steps);
+    animator.seek(steps.length);
+
+    pathOverlay.toggleHidden(name);
+    markLastRun(name);
+}
+
 algorithmButtons.forEach(button => {
     button.addEventListener("click", () => {
-        runAlgorithm(button.dataset.algorithm)
+        pressAlgorithm(button.dataset.algorithm);
     });
 });
 
@@ -295,7 +318,7 @@ window.addEventListener("keydown", event => {
     const algorithm = algorithmShortcuts[event.key.toLowerCase()];
 
     if (algorithm) {
-        runAlgorithm(algorithm);
+        pressAlgorithm(algorithm);
     }
 });
 

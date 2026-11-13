@@ -115,6 +115,21 @@ export class Animator {
         this.start();
     }
 
+    // Loaded steps have all been played and playback has stopped.
+    get finished() {
+        return !this.running &&
+            this.steps.length > 0 &&
+            this.currentStep >= this.steps.length;
+    }
+
+    // Play the loaded steps again from the beginning.
+    restart() {
+        if (this.running || this.steps.length === 0) return;
+
+        this.seek(0);
+        this.start();
+    }
+
     togglePause() {
         if (this.running) {
             this.pause();
