@@ -23,7 +23,7 @@ export function setupAlgorithmTooltip({
 }) {
     const tooltip = document.createElement("div");
     tooltip.id = "algorithm-tooltip";
-    tooltip.className = "algorithm-tooltip";
+    tooltip.className = "algorithm-tooltip popover";
     tooltip.setAttribute("role", "tooltip");
     tooltip.hidden = true;
     document.body.append(tooltip);
@@ -81,7 +81,7 @@ export function setupAlgorithmTooltip({
         tooltip.append(header);
 
         if (guarantee) {
-            tooltip.append(el("span", `tooltip-badge tooltip-badge-${guarantee.kind}`, guarantee.label));
+            tooltip.append(el("span", `badge tooltip-badge${guarantee.kind === "best" ? " badge-positive" : ""}`, guarantee.label));
         }
 
         if (description) tooltip.append(el("p", "tooltip-description", description));

@@ -67,6 +67,8 @@ python -m http.server 8000
 
 Then open `http://localhost:8000` in your browser. A local server is needed because the application uses JavaScript ES modules.
 
+The shared colours, fonts and buttons come from the christophermpalmer.com theme (`https://christophermpalmer.com/shared/theme/v1/theme.css`, linked in `index.html`), so the page needs an internet connection to look right.
+
 ## Live Demo
 
 **[Open Pathfinding Visualizer](https://chrisp-bacon2024.github.io/pathfinding-visualizer/)**

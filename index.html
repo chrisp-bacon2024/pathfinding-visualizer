@@ -7,17 +7,22 @@
              shrink it, so the small-screen layouts never kick in. -->
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Pathfinding Visualizer</title>
+        <!-- Shared theme from christophermpalmer.com: brand tokens (colours,
+             type, spacing) and components (.btn, .page-title, ...). Updating
+             the theme there updates this app too. When this app is hosted on
+             the portfolio, the build points this link at its own copy. -->
+        <link rel="stylesheet" href="https://christophermpalmer.com/shared/theme/v1/theme.css">
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
         <div class="app">
             <header class="pageHeader">
-                <h1 class="pageTitle">Pathfinding Visualizer</h1>
+                <h1 class="page-title">Pathfinding Visualizer</h1>
             </header>
 
             <div class="toolbar">
                 <section class="toolbar-section" aria-labelledby="algorithms-title">
-                    <h2 id="algorithms-title" class="toolbar-section-title">Algorithms</h2>
+                    <h2 id="algorithms-title" class="section-title">Algorithms</h2>
 
                     <div class="algorithm-buttons">
                         <!-- Not an algorithm: movement mode switch, sized to fit
@@ -27,7 +32,7 @@
 
                             <!-- Shows the current mode; click to switch.
                                  main.js swaps the icon, text and labels. -->
-                            <button id="movement-toggle-btn" class="movement-toggle-btn"
+                            <button id="movement-toggle-btn" class="btn movement-toggle-btn"
                                     aria-label="Directions: 4-way. Click to switch to 8-way."
                                     title="4-way: up, down, left and right only. Click to switch to 8-way.">
                                 <!-- Compass with 4 arrows -->
@@ -56,7 +61,7 @@
                              they become a dropdown opened by the trigger
                              (see dropdown.js). -->
                         <div class="dropdown" data-dropdown>
-                            <button type="button" class="dropdown-trigger algorithm-trigger"
+                            <button type="button" class="btn dropdown-trigger algorithm-trigger"
                                     aria-haspopup="true" aria-expanded="false"
                                     data-placeholder="Run…" aria-label="Choose an algorithm to run">
                                 <span class="dropdown-trigger-text">Run…</span>
@@ -64,27 +69,27 @@
                                 <span class="dropdown-caret" aria-hidden="true">▾</span>
                             </button>
 
-                            <div class="dropdown-menu">
+                            <div class="dropdown-menu popover">
                                 <!-- Ignore terrain cost, simple to smart. -->
-                                <button class="algorithm-btn" data-algorithm="dfs">DFS</button>
-                                <button class="algorithm-btn" data-algorithm="bfs">BFS</button>
-                                <button class="algorithm-btn" data-algorithm="bidirectionalbfs">Bi-BFS</button>
-                                <button class="algorithm-btn" data-algorithm="greedy">Greedy</button>
+                                <button class="btn algorithm-btn" data-algorithm="dfs">DFS</button>
+                                <button class="btn algorithm-btn" data-algorithm="bfs">BFS</button>
+                                <button class="btn algorithm-btn" data-algorithm="bidirectionalbfs">Bi-BFS</button>
+                                <button class="btn algorithm-btn" data-algorithm="greedy">Greedy</button>
 
-                                <button class="algorithm-btn" data-algorithm="jps">JPS</button>
-                                <button class="algorithm-btn" data-algorithm="thetastar">Theta*</button>
+                                <button class="btn algorithm-btn" data-algorithm="jps">JPS</button>
+                                <button class="btn algorithm-btn" data-algorithm="thetastar">Theta*</button>
 
                                 <!-- Use terrain cost, simple to smart. -->
-                                <button class="algorithm-btn" data-algorithm="bellmanford">Bellman-Ford</button>
-                                <button class="algorithm-btn" data-algorithm="dijkstra">Dijkstra</button>
-                                <button class="algorithm-btn" data-algorithm="astar">A*</button>
+                                <button class="btn algorithm-btn" data-algorithm="bellmanford">Bellman-Ford</button>
+                                <button class="btn algorithm-btn" data-algorithm="dijkstra">Dijkstra</button>
+                                <button class="btn algorithm-btn" data-algorithm="astar">A*</button>
                             </div>
                         </div>
                     </div>
                 </section>
 
                 <section class="toolbar-section" aria-labelledby="terrain-title">
-                    <h2 id="terrain-title" class="toolbar-section-title">Terrain</h2>
+                    <h2 id="terrain-title" class="section-title">Terrain</h2>
 
                     <!-- Two rows (label | buttons) that line up with the two
                          rows of algorithm buttons. -->
@@ -93,18 +98,18 @@
                         <div class="terrain-buttons" role="group" aria-labelledby="paint-label">
                             <!-- Becomes a dropdown on small screens, like the algorithms. -->
                             <div class="dropdown" data-dropdown>
-                                <button type="button" class="dropdown-trigger paint-trigger"
+                                <button type="button" class="btn dropdown-trigger paint-trigger"
                                         aria-haspopup="true" aria-expanded="false"
                                         aria-label="Choose a paint brush">
                                     <span class="dropdown-trigger-text">Wall</span>
                                     <span class="dropdown-caret" aria-hidden="true">▾</span>
                                 </button>
 
-                                <div class="dropdown-menu">
-                                    <button class="terrain-btn selected" data-brush="wall" aria-pressed="true">Wall</button>
-                                    <button class="terrain-btn" data-brush="grass" aria-pressed="false">Grass</button>
-                                    <button class="terrain-btn" data-brush="mud" aria-pressed="false">Mud</button>
-                                    <button class="terrain-btn" data-brush="road" aria-pressed="false">Road</button>
+                                <div class="dropdown-menu popover">
+                                    <button class="btn terrain-btn selected" data-brush="wall" aria-pressed="true">Wall</button>
+                                    <button class="btn terrain-btn" data-brush="grass" aria-pressed="false">Grass</button>
+                                    <button class="btn terrain-btn" data-brush="mud" aria-pressed="false">Mud</button>
+                                    <button class="btn terrain-btn" data-brush="road" aria-pressed="false">Road</button>
                                 </div>
                             </div>
                         </div>
@@ -113,12 +118,12 @@
                              one, the other wipes it back to plain grass. -->
                         <span id="map-label" class="toolbar-label">Map:</span>
                         <div class="terrain-buttons" role="group" aria-labelledby="map-label">
-                            <button id="generate-map-btn" class="generate-btn"
+                            <button id="generate-map-btn" class="btn generate-btn"
                                     title="Generate a new random map">
                                 Generate
                             </button>
 
-                            <button id="clear-btn" class="clear-btn"
+                            <button id="clear-btn" class="btn clear-btn"
                                     title="Clear the map: all terrain, walls, paths and search colours">
                                 Clear
                             </button>
@@ -127,18 +132,18 @@
                 </section>
 
                 <section class="toolbar-section playback-section" aria-labelledby="playback-title">
-                    <h2 id="playback-title" class="toolbar-section-title">Playback</h2>
+                    <h2 id="playback-title" class="section-title">Playback</h2>
 
                     <div class="playback-controls">
-                        <input type="range" id="playback-slider" class="playback-slider"
+                        <input type="range" id="playback-slider" class="range playback-slider"
                                min="0" max="100" value="0" step="1"
                                aria-label="Playback position">
 
                         <div class="playback-buttons">
-                            <button id="play-pause-btn" class="play-pause-btn"
+                            <button id="play-pause-btn" class="btn play-pause-btn"
                                     aria-label="Play" aria-pressed="false">▶</button>
 
-                            <select id="playback-speed" class="playback-speed"
+                            <select id="playback-speed" class="select playback-speed"
                                     aria-label="Playback speed">
                                 <option value="0.25">0.25x</option>
                                 <option value="0.5">0.5x</option>

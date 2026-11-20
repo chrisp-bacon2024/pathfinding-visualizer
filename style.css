@@ -1,3 +1,12 @@
+/* Pathfinding Visualizer styles.
+
+   Colours, type, spacing and the shared components (.btn, .btn.selected,
+   .page-title, .section-title, .select, .range, .popover, .badge) come from
+   the christophermpalmer.com theme, linked before this file in index.html.
+   This file only holds what is specific to this app: layout, the toolbar,
+   the movement toggle, dropdown behaviour, path slivers and the algorithm
+   tooltip. Use theme tokens (var(--color-...)) rather than raw colours, so
+   changes to the theme reach this app too. */
 
 * {
     box-sizing: border-box;
@@ -19,7 +28,7 @@ body {
        --pf-bar-height is unset, so nothing is subtracted. Browsers without
        dvh support keep the 100vh line above. */
     height: calc(100dvh - var(--pf-bar-height, 0px));
-    padding: 20px;
+    padding: var(--space-5);
     gap: 15px;
 }
 
@@ -28,29 +37,9 @@ body {
     flex-shrink: 0;
 }
 
-/* Page title: echoes the uppercase, letter-spaced section titles, in the
-   dark blue of selected buttons, with an underline in their light blue. */
+/* The title itself is the theme's .page-title. */
 .pageHeader {
     text-align: center;
-}
-
-.pageTitle {
-    margin: 0;
-    font-size: clamp(22px, 4.5vw, 30px);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #284a63;
-}
-
-.pageTitle::after {
-    content: "";
-    display: block;
-    width: 56px;
-    height: 3px;
-    margin: 6px auto 0;
-    border-radius: 2px;
-    background: #65b5e8;
 }
 
 /* Grid */
@@ -90,33 +79,25 @@ body {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 8px 12px;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
 }
 
 /* Dividers between top-level toolbar parts. */
 .toolbar > * + * {
-    border-left: 1px solid #cbd5e1;
-    padding-left: 12px;
+    border-left: var(--border);
+    padding-left: var(--space-3);
 }
 
-/* A titled section: centred title above its controls. Sections stretch
-   to the toolbar's height so their titles line up along the top. */
+/* A titled section: centred title (the theme's .section-title) above its
+   controls. Sections stretch to the toolbar's height so their titles line
+   up along the top. */
 .toolbar-section {
     display: flex;
     flex-direction: column;
     align-items: center;
     align-self: stretch;
-    gap: 4px;
-}
-
-.toolbar-section-title {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #475569;
+    gap: var(--space-1);
 }
 
 /* Paint and Map rows. Same row gap as .algorithm-buttons, so with
@@ -125,7 +106,7 @@ body {
     display: grid;
     grid-template-columns: auto auto;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1-5);
 }
 
 /* Centred within the column; the Paint row is the widest, so this
@@ -133,38 +114,21 @@ body {
 .terrain-buttons {
     display: flex;
     justify-content: center;
-    gap: 6px;
+    gap: var(--space-1-5);
 }
 
 .toolbar-label {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-semibold);
     white-space: nowrap;
-    margin-right: 4px;
+    margin-right: var(--space-1);
 }
 
-/* Shared button styles */
-
+/* Buttons look like the theme's .btn; in the toolbar they keep their
+   natural size. */
 .toolbar button {
     flex: 0 0 auto;
     width: auto;
-    padding: 8px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background: #fff;
-    color: #334155;
-    font: inherit;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-}
-
-.toolbar button:hover:not(:disabled) {
-    background: #f1f5f9;
-}
-
-.toolbar button:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
 }
 
 /* Algorithm buttons */
@@ -173,28 +137,20 @@ body {
 .algorithm-buttons {
     display: grid;
     grid-template-columns: repeat(5, auto);
-    gap: 6px;
+    gap: var(--space-1-5);
 }
 
-/* Most recently run algorithm: same dark blue as the selected paint brush.
-   The extra specificity beats `.toolbar button` and its hover rule. */
-.toolbar .algorithm-btn.selected {
-    background: #284a63;
-    border-color: #65b5e8;
-    color: white;
-}
-
-.toolbar .algorithm-btn.selected:hover:not(:disabled) {
-    background: #345d7b;
-}
+/* The most recently run algorithm and the current paint brush use the
+   theme's .btn.selected (main.js and gridInteractions.js toggle it). */
 
 /* Can't run in the current direction mode (e.g. Theta* in 4-way). Looks
-   disabled, but still gets hover and long press so the tooltip can say why. */
+   disabled, but still gets hover and long press so the tooltip can say why.
+   The extra specificity beats .btn.selected and the .btn hover. */
 .toolbar .algorithm-btn.unavailable,
 .toolbar .algorithm-btn.unavailable:hover:not(:disabled) {
-    background: #fff;
-    border-color: #cbd5e1;
-    color: #334155;
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text-ui);
     opacity: 0.45;
     cursor: not-allowed;
 }
@@ -202,31 +158,7 @@ body {
 /* Sliver in the algorithm's path colour (set as --path-color in main.js),
    shown while its path is part of the comparison. */
 .toolbar .algorithm-btn.has-path {
-    box-shadow: inset 0 -4px 0 var(--path-color);
-}
-
-/* Run button */
-
-#runAlgorithm {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: white;
-}
-
-#runAlgorithm:hover:not(:disabled) {
-    background: #1d4ed8;
-}
-
-/* Terrain buttons */
-
-.terrain-btn.selected {
-    background: #284a63;
-    border-color: #65b5e8;
-    color: white;
-}
-
-.terrain-btn.selected:hover {
-    background: #345d7b;
+    box-shadow: inset 0 calc(-1 * var(--sliver-width)) 0 var(--path-color);
 }
 
 /* Movement toggle (the last slot of the algorithm grid).
@@ -240,41 +172,41 @@ body {
     gap: 0;
     min-width: 0;
     padding: 1px 2px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background: #f1f5f9;
+    border: var(--border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-muted);
 }
 
 .movement-toggle-label {
-    font-size: 9px;
-    font-weight: 600;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-semibold);
     line-height: 10px;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-caption);
     text-transform: uppercase;
     text-align: center;
-    color: #64748b;
+    color: var(--color-text-secondary);
 }
 
 .toolbar .movement-toggle-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    padding: 0 4px;
+    gap: var(--space-1);
+    padding: 0 var(--space-1);
     border: none;
-    border-radius: 4px;
-    background: #284a63;
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
+    border-radius: var(--radius-inner);
+    background: var(--color-selected-bg);
+    color: var(--color-selected-text);
+    font-size: var(--font-size-micro);
+    font-weight: var(--font-weight-semibold);
     line-height: 22px;
     white-space: nowrap;
 }
 
-/* :not(:disabled) matches the specificity of the generic
-   ".toolbar button:hover:not(:disabled)" rule so this one wins. */
+/* :not(:disabled) matches the specificity of the theme's
+   ".btn:hover:not(:disabled)" rule plus a class, so this one wins. */
 .toolbar .movement-toggle-btn:hover:not(:disabled) {
-    background: #345d7b;
+    background: var(--color-selected-bg-hover);
 }
 
 /* 22px so the arrows stay distinct at 100% zoom. The panel's padding,
@@ -290,21 +222,6 @@ body {
 /* The hidden attribute alone loses to display rules on SVGs in some browsers. */
 .movement-icon[hidden] {
     display: none;
-}
-
-/* Keyboard shortcut labels */
-
-.shortcut {
-    font-size: 11px;
-    color: #64748b;
-    border: 1px solid #cbd5e1;
-    border-radius: 3px;
-    padding: 2px 5px;
-}
-
-.terrain-btn.selected .shortcut {
-    color: #e2e8f0;
-    border-color: #65b5e8;
 }
 
 /* Playback */
@@ -323,47 +240,34 @@ body {
     display: grid;
     grid-template-rows: 1fr 1fr;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1-5);
     min-width: 0;
 }
 
+/* Colour and cursor come from the theme's .range. */
 .playback-slider {
     width: 100%;
     margin: 0;
-    accent-color: #334155;
-    cursor: pointer;
 }
 
 .playback-buttons {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1-5);
 }
 
 .toolbar .play-pause-btn {
-    min-width: 44px;
-    padding: 4px 12px;
+    min-width: var(--touch-target);
+    padding: var(--space-1) var(--space-3);
 }
 
-.playback-speed {
-    padding: 4px 8px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background: #fff;
-    color: #334155;
-    font: inherit;
-    cursor: pointer;
-}
-
-.playback-speed:hover {
-    background: #f1f5f9;
-}
+/* The speed menu is the theme's .select. */
 
 /* Dropdowns (dropdown.js)
    Wide screens: the wrapper and menu don't create boxes, so the real
    buttons lay out exactly as if they weren't wrapped, and the trigger
-   is hidden. */
+   is hidden. (The menu's .popover look only shows once it is a box.) */
 
 .dropdown,
 .dropdown-menu {
@@ -394,7 +298,7 @@ body {
     .toolbar .dropdown-trigger {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: var(--space-1-5);
         width: 100%;
         white-space: nowrap;
     }
@@ -410,7 +314,7 @@ body {
     }
 
     .dropdown-caret {
-        font-size: 11px;
+        font-size: var(--font-size-micro);
         opacity: 0.7;
     }
 
@@ -419,20 +323,17 @@ body {
         flex: 1;
     }
 
+    /* Border, background and shadow come from the theme's .popover. */
     .dropdown-menu {
         display: none;
         position: absolute;
-        top: calc(100% + 4px);
+        top: calc(100% + var(--space-1));
         left: 0;
-        z-index: 20;
+        z-index: var(--z-dropdown);
         min-width: 100%;
         flex-direction: column;
-        gap: 4px;
-        padding: 6px;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        background: #fff;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+        gap: var(--space-1);
+        padding: var(--space-1-5);
     }
 
     .dropdown.open .dropdown-menu {
@@ -452,7 +353,7 @@ body {
     .toolbar {
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: var(--space-2-5);
     }
 
     /* align-self overrides the stretch used for side-by-side titles,
@@ -467,8 +368,8 @@ body {
     .toolbar > * + * {
         border-left: none;
         padding-left: 0;
-        border-top: 1px solid #cbd5e1;
-        padding-top: 10px;
+        border-top: var(--border);
+        padding-top: var(--space-2-5);
     }
 
     /* Algorithms and Terrain share the same two columns, so Directions
@@ -508,27 +409,18 @@ body {
     }
 }
 
-/* The trigger mirrors the current choice: dark blue when something is
-   selected (last run / current brush), plus its path sliver. */
-.toolbar .dropdown-trigger.selected {
-    background: #284a63;
-    border-color: #65b5e8;
-    color: white;
-}
-
-.toolbar .dropdown-trigger.selected:hover:not(:disabled) {
-    background: #345d7b;
-}
-
+/* The trigger mirrors the current choice: .btn.selected when something is
+   selected (last run / current brush, set by dropdown.js), plus its path
+   sliver. */
 .toolbar .dropdown-trigger.has-path {
-    box-shadow: inset 0 -4px 0 var(--path-color);
+    box-shadow: inset 0 calc(-1 * var(--sliver-width)) 0 var(--path-color);
 }
 
 /* Path still in the comparison but hidden (press the blue button again
    to show it): a faded sliver. */
 .toolbar .algorithm-btn.has-path.path-hidden,
 .toolbar .dropdown-trigger.has-path.path-hidden {
-    box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--path-color) 30%, transparent);
+    box-shadow: inset 0 calc(-1 * var(--sliver-width)) 0 color-mix(in srgb, var(--path-color) 30%, transparent);
 }
 
 .dropdown-dot.path-hidden {
@@ -549,7 +441,7 @@ body {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.55);
+    box-shadow: var(--outline-swatch);
 }
 
 /* Algorithm tooltip (algorithmTooltip.js) */
@@ -562,18 +454,15 @@ body {
     user-select: none;
 }
 
+/* Border, background and shadow come from the theme's .popover. */
 .algorithm-tooltip {
     position: fixed;
-    z-index: 30;
+    z-index: var(--z-tooltip);
     max-width: min(360px, calc(100vw - 16px));
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
-    color: #334155;
-    font-size: 13px;
-    line-height: 1.35;
+    padding: var(--surface-padding);
+    color: var(--color-text-ui);
+    font-size: var(--font-size-small);
+    line-height: var(--leading-ui);
     pointer-events: none;
 }
 
@@ -584,11 +473,11 @@ body {
 .tooltip-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1-5);
 }
 
 .tooltip-title {
-    color: #284a63;
+    color: var(--color-heading);
     font-size: 14px;
 }
 
@@ -597,68 +486,54 @@ body {
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: #cbd5e1;
-    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.55);
+    background: var(--color-border);
+    box-shadow: var(--outline-swatch);
 }
 
+/* The guarantee is a theme .badge (.badge-positive when it's a guarantee). */
 .tooltip-badge {
-    display: inline-block;
     margin-top: 5px;
-    padding: 1px 7px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.tooltip-badge-best {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.tooltip-badge-none {
-    background: #f1f5f9;
-    color: #475569;
 }
 
 .tooltip-description {
-    margin: 6px 0 0;
+    margin: var(--space-1-5) 0 0;
 }
 
 .tooltip-note {
-    margin: 6px 0 0;
-    color: #64748b;
+    margin: var(--space-1-5) 0 0;
+    color: var(--color-text-secondary);
     font-style: italic;
 }
 
 .tooltip-warning {
-    margin: 6px 0 0;
-    padding: 4px 6px;
-    border-left: 3px solid #f59e0b;
-    background: #fffbeb;
-    color: #92400e;
-    font-weight: 600;
+    margin: var(--space-1-5) 0 0;
+    padding: var(--space-1) var(--space-1-5);
+    border-left: 3px solid var(--color-warning-border);
+    background: var(--color-warning-bg);
+    color: var(--color-warning-text);
+    font-weight: var(--font-weight-semibold);
 }
 
 .tooltip-table {
     width: 100%;
-    margin-top: 8px;
+    margin-top: var(--space-2);
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: var(--font-size-label);
     font-variant-numeric: tabular-nums;
 }
 
 .tooltip-table th {
-    padding: 0 0 3px 8px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #64748b;
-    font-size: 11px;
-    font-weight: 600;
+    padding: 0 0 3px var(--space-2);
+    border-bottom: 1px solid var(--color-rule);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-micro);
+    font-weight: var(--font-weight-semibold);
     text-align: right;
     white-space: nowrap;
 }
 
 .tooltip-table td {
-    padding: 2px 0 2px 8px;
+    padding: 2px 0 2px var(--space-2);
     text-align: right;
     white-space: nowrap;
 }
@@ -673,18 +548,18 @@ body {
 
 /* The hovered algorithm's row. */
 .tooltip-table tr.current td {
-    background: #eff6ff;
-    font-weight: 700;
+    background: var(--color-highlight-row);
+    font-weight: var(--font-weight-bold);
 }
 
 /* Lowest value in a column. */
 .tooltip-table td.best {
-    color: #15803d;
-    font-weight: 700;
+    color: var(--color-success-strong);
+    font-weight: var(--font-weight-bold);
 }
 
 .tooltip-table .tooltip-muted {
-    color: #94a3b8;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 
@@ -692,7 +567,7 @@ body {
 
 @media (max-width: 700px) {
     .app {
-        padding: 10px;
-        gap: 10px;
+        padding: var(--space-2-5);
+        gap: var(--space-2-5);
     }
 }
